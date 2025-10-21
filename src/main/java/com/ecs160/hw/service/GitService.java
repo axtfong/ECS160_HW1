@@ -89,13 +89,13 @@ public class GitService {
             
             // Check if repo name suggests it's a tutorial/documentation
             boolean isTutorial = name.contains("guide") || 
-                                name.contains("tutorial") || 
-                                name.contains("awesome") || 
-                                name.contains("example") || 
-                                name.contains("learn") ||
-                                name.contains("book") ||
-                                name.contains("course") ||
-                                name.contains("doc");
+                                 name.contains("tutorial") ||
+                                 name.contains("awesome") ||
+                                 name.contains("example") ||
+                                 name.contains("learn") ||
+                                 name.contains("book") ||
+                                 name.contains("course") ||
+                                 name.contains("doc");
             
             // If it has a language and doesn't look like a tutorial, assume it's a source code repo
             return language != null && !language.isEmpty() && !isTutorial;
