@@ -6,7 +6,6 @@ public class Owner {
     private String htmlUrl;
     private boolean siteAdmin;
 
-    // Getters and setters
     public String getLogin() {
         return login;
     }

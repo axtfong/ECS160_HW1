@@ -4,4 +4,5 @@ com/ecs160/hw/model/Issue.class
 com/ecs160/hw/App.class
 com/ecs160/hw/model/Owner.class
 com/ecs160/hw/model/Repo.class
+com/ecs160/hw/util/ConfigUtil.class
 com/ecs160/hw/service/GitService.class

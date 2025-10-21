@@ -22,7 +22,6 @@ public class Repo {
         this.issues = new ArrayList<>();
     }
 
-    // Getters and setters
     public String getName() {
         return name;
     }

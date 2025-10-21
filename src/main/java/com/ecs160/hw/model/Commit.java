@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Commit {
-   private String sha;
+    private String sha;
     private String message;
     private List<String> modifiedFiles;
 
@@ -12,7 +12,6 @@ public class Commit {
         this.modifiedFiles = new ArrayList<>();
     }
 
-    // Getters and setters
     public String getSha() {
         return sha;
     }
