@@ -15,5 +15,3 @@ To set up the GitHub API key:
    ```
    github.api.key=your_token_here
    ```
-
-The application is currently configured to use pre-downloaded JSON files, but with this API key setup, it would be ready to make direct API calls if needed.
