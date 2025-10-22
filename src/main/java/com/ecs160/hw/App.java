@@ -158,7 +158,10 @@ public class App
 
         int forksToCheck = Math.min(20, repo.getForks().size());
 
-        for (int i = 0; i < forksToCheck; i++) {
+        // Start from the end of the list to get the most recent forks
+        int startIndex = Math.max(0, repo.getForks().size() - forksToCheck);
+
+        for (int i = startIndex; i < repo.getForks().size(); i++) {
             Repo fork = repo.getForks().get(i);
             count += fork.getCommitCount();
         }
