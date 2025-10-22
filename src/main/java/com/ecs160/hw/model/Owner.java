@@ -22,19 +22,19 @@ public class Owner {
         this.id = id;
     }
 
-    public String getHtmlUrl() {
-        return htmlUrl;
-    }
-
-    public void setHtmlUrl(String htmlUrl) {
-        this.htmlUrl = htmlUrl;
-    }
-
-    public boolean isSiteAdmin() {
-        return siteAdmin;
-    }
-
-    public void setSiteAdmin(boolean siteAdmin) {
-        this.siteAdmin = siteAdmin;
-    }
+//    public String getHtmlUrl() {
+//        return htmlUrl;
+//    }
+//
+//    public void setHtmlUrl(String htmlUrl) {
+//        this.htmlUrl = htmlUrl;
+//    }
+//
+//    public boolean isSiteAdmin() {
+//        return siteAdmin;
+//    }
+//
+//    public void setSiteAdmin(boolean siteAdmin) {
+//        this.siteAdmin = siteAdmin;
+//    }
 }

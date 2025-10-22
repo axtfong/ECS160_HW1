@@ -21,58 +21,45 @@ public class JsonHandler {
     public List<Repo> loadReposFromFile(String filePath) {
         List<Repo> repos = new ArrayList<>();
         try (FileReader reader = new FileReader(filePath)) {
-            // Print file path for debugging
-            System.out.println("Loading repos from: " + filePath);
             
-            // Try to parse the top-level structure
+            // parse top-level structure
             JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
-            
-            // Debug - print the keys in the top-level object
-            System.out.println("JSON keys: " + jsonObject.keySet());
-            
-            // Check if the file has an "items" array or is just an array of repos
+
             JsonArray items;
             if (jsonObject.has("items")) {
                 items = jsonObject.getAsJsonArray("items");
             } else if (jsonObject.has("repositories")) {
                 items = jsonObject.getAsJsonArray("repositories");
             } else {
-                // If it doesn't have specific keys, try to parse it directly as an array
                 try (FileReader reReader = new FileReader(filePath)) {
                     items = gson.fromJson(reReader, JsonArray.class);
                 }
             }
             
             System.out.println("Found " + items.size() + " repositories");
-            
-            // Process each repo
+
+            // process repos
             for (JsonElement item : items) {
                 Repo repo = new Repo();
                 JsonObject repoObj = item.getAsJsonObject();
-                
-                // Print repo details for debugging
-                System.out.println("Processing repo: " + repoObj.toString().substring(0, Math.min(100, repoObj.toString().length())) + "...");
-                
-                // Basic repo data
+
                 repo.setName(getString(repoObj, "name"));
                 repo.setHtmlUrl(getString(repoObj, "html_url"));
                 repo.setForksCount(getInt(repoObj, "forks_count"));
                 
-                // Language might be null for some repos
+                // language might be null for some repos
                 if (repoObj.has("language") && !repoObj.get("language").isJsonNull()) {
                     repo.setLanguage(repoObj.get("language").getAsString());
                 }
                 
                 repo.setOpenIssuesCount(getInt(repoObj, "open_issues_count"));
                 repo.setStarCount(getInt(repoObj, "stargazers_count"));
-                
-                // Owner info
+
                 if (repoObj.has("owner") && !repoObj.get("owner").isJsonNull()) {
                     JsonObject owner = repoObj.getAsJsonObject("owner");
                     repo.setOwnerLogin(getString(owner, "login"));
                 }
-                
-                // Add to our list
+
                 repos.add(repo);
             }
             
@@ -86,8 +73,8 @@ public class JsonHandler {
         
         return repos;
     }
-    
-    // Helper methods to safely get values from JSON
+
+    // helpers to get stuff from json
     private String getString(JsonObject obj, String key) {
         try {
             if (obj.has(key) && !obj.get(key).isJsonNull()) {

@@ -3,3 +3,4 @@ config.properties
 cloned_repos
 target
 dump.rdb
+.DS_Store
