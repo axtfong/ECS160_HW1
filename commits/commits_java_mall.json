@@ -1,0 +1,199 @@
+{
+  "name": "mall",
+  "ownerLogin": "macrozheng",
+  "language": "Java",
+  "commits": [
+    {
+      "sha": "dd6569c3558f79af5b21aad601349e0f029b9a6d",
+      "message": "后台删除用户时先删除缓存中的用户信息",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/impl/UmsAdminServiceImpl.java"
+      ]
+    },
+    {
+      "sha": "2616ba4289472666459e5e8e0bb358db1a8a23be",
+      "message": "Update FlashPromotionProduct.java",
+      "modifiedFiles": [
+        "mall-portal/src/main/java/com/macro/mall/portal/domain/FlashPromotionProduct.java"
+      ]
+    },
+    {
+      "sha": "97f630e5b701226ef61d80d0c3cd5d74cb890455",
+      "message": "Update CartPromotionItem.java",
+      "modifiedFiles": [
+        "mall-portal/src/main/java/com/macro/mall/portal/domain/CartPromotionItem.java"
+      ]
+    },
+    {
+      "sha": "5eb68b81127af40243edaca9c0e5d41ea0b4d051",
+      "message": "Update CartProduct.java",
+      "modifiedFiles": [
+        "mall-portal/src/main/java/com/macro/mall/portal/domain/CartProduct.java"
+      ]
+    },
+    {
+      "sha": "54b11fc32d8a8c171f0eae15e914b772a76e42b2",
+      "message": "Update OmsOrderReturnApplyResult.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/dto/OmsOrderReturnApplyResult.java"
+      ]
+    },
+    {
+      "sha": "7a1ca5d112a4009d55ba4bb192b2e99d93cea822",
+      "message": "Update GlobalCorsConfig.java",
+      "modifiedFiles": [
+        "mall-portal/src/main/java/com/macro/mall/portal/config/GlobalCorsConfig.java"
+      ]
+    },
+    {
+      "sha": "2066a5521202a94621f57c29bad3949152ffb1a0",
+      "message": "Update UmsMenuServiceImpl.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/impl/UmsMenuServiceImpl.java"
+      ]
+    },
+    {
+      "sha": "83fe3e707b99d135deb9de071ce87fe4b07c563f",
+      "message": "Update UmsAdminServiceImpl.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/impl/UmsAdminServiceImpl.java"
+      ]
+    },
+    {
+      "sha": "bbd593e869ec571287eda0613a2b9107c4fa81f8",
+      "message": "Update UmsAdminCacheService.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/UmsAdminCacheService.java"
+      ]
+    },
+    {
+      "sha": "8a6579db7f145ac6c145d719eae9b47b5dbc5819",
+      "message": "Update SmsHomeBrandService.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/SmsHomeBrandService.java"
+      ]
+    },
+    {
+      "sha": "6bea1cbb9793f03c7ab08063a4435b94941892ef",
+      "message": "Update SmsHomeAdvertiseService.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/SmsHomeAdvertiseService.java"
+      ]
+    },
+    {
+      "sha": "82944a4d18fe7c60b2718f5b06c7912c9dfff1cd",
+      "message": "Update SmsFlashPromotionService.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/SmsFlashPromotionService.java"
+      ]
+    },
+    {
+      "sha": "5fb63b01deeac7d272db488ceb00fda1d1b4dd8b",
+      "message": "Update SmsHomeRecommendSubjectService.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/SmsHomeRecommendSubjectService.java"
+      ]
+    },
+    {
+      "sha": "cb6c595484b02ca26c2f9b8df6960afc4ce8c2d0",
+      "message": "Update SmsHomeRecommendProductService.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/SmsHomeRecommendProductService.java"
+      ]
+    },
+    {
+      "sha": "9176504425a36b4d349b14fbaf68aec5278194ec",
+      "message": "Update SmsHomeNewProductService.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/SmsHomeNewProductService.java"
+      ]
+    },
+    {
+      "sha": "f1f7b1a08a7a49cd40eb15ec2d079093afd504c7",
+      "message": "Update SmsHomeBrandService.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/SmsHomeBrandService.java"
+      ]
+    },
+    {
+      "sha": "f37b8c3645479039199ceab1041a7d047b0b1926",
+      "message": "Update SmsFlashPromotionService.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/SmsFlashPromotionService.java"
+      ]
+    },
+    {
+      "sha": "5b14c5fc45f0eff0bbc6fa3947635e4bfced711a",
+      "message": "Update SmsFlashPromotionProductRelationService.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/SmsFlashPromotionProductRelationService.java"
+      ]
+    },
+    {
+      "sha": "037314f9a244b3338022e23ec41e2c462fa8208d",
+      "message": "Update SmsFlashPromotionProductRelationService.java",
+      "modifiedFiles": [
+        "mall-admin/src/main/java/com/macro/mall/service/SmsFlashPromotionProductRelationService.java"
+      ]
+    },
+    {
+      "sha": "2b169f294c2935e0c52e3f051a42891b9398f453",
+      "message": "Update README.md",
+      "modifiedFiles": [
+        "README.md"
+      ]
+    }
+  ],
+  "forks": [
+    {
+      "name": "mall",
+      "ownerLogin": "asato425",
+      "commitCount": 0
+    },
+    {
+      "name": "mall",
+      "ownerLogin": "jianghaijunqwq",
+      "commitCount": 0
+    },
+    {
+      "name": "mall",
+      "ownerLogin": "StoneStone11",
+      "commitCount": 0
+    },
+    {
+      "name": "mall",
+      "ownerLogin": "huanghui138",
+      "commitCount": 0
+    },
+    {
+      "name": "mall",
+      "ownerLogin": "seven-308",
+      "commitCount": 0
+    },
+    {
+      "name": "mall",
+      "ownerLogin": "cereusxing",
+      "commitCount": 0
+    },
+    {
+      "name": "mall",
+      "ownerLogin": "ding-well",
+      "commitCount": 0
+    },
+    {
+      "name": "mall",
+      "ownerLogin": "xiaoxiao-l1",
+      "commitCount": 0
+    },
+    {
+      "name": "mall",
+      "ownerLogin": "yanlong6908718",
+      "commitCount": 0
+    },
+    {
+      "name": "mall",
+      "ownerLogin": "xjy0522",
+      "commitCount": 0
+    }
+  ]
+}

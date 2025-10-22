@@ -1,0 +1,231 @@
+{
+  "name": "tesseract",
+  "ownerLogin": "tesseract-ocr",
+  "language": "C++",
+  "commits": [
+    {
+      "sha": "c1d663761b93d2d7d3aae6b7d47dc07cfa6d84e1",
+      "message": "Merge pull request #4467 from stweil/update_cmake_ci\n\nCI: Remove unneeded export statements from cmake workflow for macOS",
+      "modifiedFiles": [
+        ".github/workflows/cmake.yml"
+      ]
+    },
+    {
+      "sha": "12120750eee91ec3dbb89df3bd18495220b852c9",
+      "message": "CI: Remove unneeded export statements from cmake workflow for macOS\n\nThey cause warnings when Homebrew was installed in /opt/homebrew\nand /usr/local/opt does not exist.\n\nPKG_CONFIG_PATH is defined in CMakeLists.txt.\n\nSigned-off-by: Stefan Weil \u003csw@weilnetz.de\u003e",
+      "modifiedFiles": [
+        ".github/workflows/cmake.yml"
+      ]
+    },
+    {
+      "sha": "cb8b1457421b1c11848b8acc0d2db65273d01002",
+      "message": "GA: macos: install curl and icu4c only if there are not installed",
+      "modifiedFiles": [
+        ".github/workflows/autotools-macos.yml",
+        ".github/workflows/cmake.yml",
+        ".github/workflows/unittest-macos.yml"
+      ]
+    },
+    {
+      "sha": "9aa699c051d618a19637d06d5b35e2a03f95a1a0",
+      "message": "Update bug issue template for OS options\n\nAdded macOS 26 Tahoe and macOS 15 Sequoia options. Removed macOS 12 Monterey and macOS 11 Big Sur options.",
+      "modifiedFiles": [
+        ".github/ISSUE_TEMPLATE/issue-bug.yml"
+      ]
+    },
+    {
+      "sha": "08012510e8547d9e08276c4c5d995c45e494da77",
+      "message": "Move version info to appropriate ALTO element",
+      "modifiedFiles": [
+        "src/api/altorenderer.cpp"
+      ]
+    },
+    {
+      "sha": "b1e1c249132703f6390bf5792ecb8d7c043be350",
+      "message": "reject.cpp: Remove unneeded  included header in disable-legacy mode",
+      "modifiedFiles": [
+        "src/ccmain/reject.cpp"
+      ]
+    },
+    {
+      "sha": "e15aba4c7c4193258b6381c94ee67f811d1413a3",
+      "message": "Clean up .mailmap",
+      "modifiedFiles": [
+        ".mailmap"
+      ]
+    },
+    {
+      "sha": "71ed79daedb36a552c5505f829944374af35a4fc",
+      "message": "chore: fix cyrillic typo",
+      "modifiedFiles": [
+        "doc/tesseract.1.asc"
+      ]
+    },
+    {
+      "sha": "76a452d9e794c86256c32e374c711beeb1e6788c",
+      "message": "chore: update checkout action",
+      "modifiedFiles": [
+        ".github/workflows/autotools-macos.yml",
+        ".github/workflows/autotools-openmp.yml",
+        ".github/workflows/autotools.yml",
+        ".github/workflows/cmake-win64.yml",
+        ".github/workflows/cmake.yml",
+        ".github/workflows/codeql-analysis.yml",
+        ".github/workflows/installer-for-windows.yml",
+        ".github/workflows/msys2.yml",
+        ".github/workflows/sw.yml",
+        ".github/workflows/unittest-disablelegacy.yml",
+        ".github/workflows/unittest-macos.yml",
+        ".github/workflows/unittest.yml",
+        ".github/workflows/vcpkg.yml"
+      ]
+    },
+    {
+      "sha": "17b4d9e595f38005fd607d8fd44fdef24487a81e",
+      "message": "Merge pull request #4452 from zdenop/improve_cmake\n\nCmake optimization with warp2",
+      "modifiedFiles": [
+        ".github/workflows/cmake-win64.yml",
+        ".github/workflows/cmake.yml",
+        "CMakeLists.txt",
+        "cmake/BuildOptimizations.cmake",
+        "cmake/SourceLists.cmake",
+        "src/classify/adaptmatch.cpp",
+        "src/training/CMakeLists.txt",
+        "src/viewer/scrollview.cpp",
+        "src/viewer/svutil.cpp",
+        "src/viewer/svutil.h"
+      ]
+    },
+    {
+      "sha": "6733a9ae87cbdd878a83e4a683f7b3d2fc41f973",
+      "message": "Update vcpkg.yml",
+      "modifiedFiles": [
+        ".github/workflows/vcpkg.yml"
+      ]
+    },
+    {
+      "sha": "6d3ef92d27fb9779f6d0b75564fb734a0789a717",
+      "message": " Fix cmake macos build: Change the macro definition from classify_enable_adaptive_matcher to CLASSIFY_ENABLE_ADAPTIVE_MATCHER_OVERRIDE to avoid conflicts with the BOOL_MEMBER parameter declaration in classify.cpp",
+      "modifiedFiles": [
+        "src/classify/adaptmatch.cpp"
+      ]
+    },
+    {
+      "sha": "196622dd055caf8134477f123d85868515cb2d54",
+      "message": "set kMaxMsgSize in svutil.h to fix macos build error: redefinition of \u0027kMaxMsgSize\u0027",
+      "modifiedFiles": [
+        "src/viewer/scrollview.cpp",
+        "src/viewer/svutil.cpp",
+        "src/viewer/svutil.h"
+      ]
+    },
+    {
+      "sha": "90333e43be053f2e236d77e6d306cbcb970c5cbf",
+      "message": "cmake: Don\u0027t use GLOB in CMake files - fixes #4442",
+      "modifiedFiles": [
+        "CMakeLists.txt",
+        "cmake/SourceLists.cmake"
+      ]
+    },
+    {
+      "sha": "fe5c522e8cfcaf7632832120c3c117a2b40e1966",
+      "message": "cmake: solve macos warning about installed ninja and icu4c",
+      "modifiedFiles": [
+        ".github/workflows/cmake.yml"
+      ]
+    },
+    {
+      "sha": "116aaa5c7e26cdd41dcd0d69d4765ac4979fc600",
+      "message": "cmake: build optimization",
+      "modifiedFiles": [
+        ".github/workflows/cmake-win64.yml",
+        ".github/workflows/cmake.yml",
+        "CMakeLists.txt",
+        "cmake/BuildOptimizations.cmake",
+        "src/training/CMakeLists.txt"
+      ]
+    },
+    {
+      "sha": "d3e50cfb0674574dad8a8b0ac2117fd019b78b5c",
+      "message": "More signed/unsigned fixes\n\nSigned-off-by: Stefan Weil \u003csw@weilnetz.de\u003e",
+      "modifiedFiles": [
+        "unittest/paragraphs_test.cc"
+      ]
+    },
+    {
+      "sha": "5490081c8307ffdfa7645c4172d9b9f0a1464e0e",
+      "message": "Fix some signed / unsigned mismatches\n\nSigned-off-by: Stefan Weil \u003csw@weilnetz.de\u003e",
+      "modifiedFiles": [
+        "src/ccmain/osdetect.cpp",
+        "src/classify/shapetable.cpp",
+        "src/dict/dict.cpp"
+      ]
+    },
+    {
+      "sha": "7fca69070b279692ede55f1eb4d2cf3843c19aa0",
+      "message": "cmake: Set required PKG_CONFIG_PATH for builds with Homebrew on macOS\n\nSigned-off-by: Stefan Weil \u003csw@weilnetz.de\u003e",
+      "modifiedFiles": [
+        "CMakeLists.txt"
+      ]
+    },
+    {
+      "sha": "39b01350bb405f7bc1b0b244b46554651da9c065",
+      "message": "cmake: Fix include statement for allheaders.h\n\nLeptonica include files are included without a leptonica/ prefix.\n\nSigned-off-by: Stefan Weil \u003csw@weilnetz.de\u003e",
+      "modifiedFiles": [
+        "cmake/CheckFunctions.cmake"
+      ]
+    }
+  ],
+  "forks": [
+    {
+      "name": "tesseract",
+      "ownerLogin": "iamkeithli",
+      "commitCount": 0
+    },
+    {
+      "name": "tesseract",
+      "ownerLogin": "qodana",
+      "commitCount": 0
+    },
+    {
+      "name": "tesseract",
+      "ownerLogin": "infinity31415926535pi-oss",
+      "commitCount": 0
+    },
+    {
+      "name": "tesseract",
+      "ownerLogin": "arinakiseleva-ru",
+      "commitCount": 0
+    },
+    {
+      "name": "tesseract",
+      "ownerLogin": "yigityuzyil",
+      "commitCount": 0
+    },
+    {
+      "name": "tesseract",
+      "ownerLogin": "KacperTZSTI",
+      "commitCount": 0
+    },
+    {
+      "name": "tesseract",
+      "ownerLogin": "darylcamzworkwithme-cmd",
+      "commitCount": 0
+    },
+    {
+      "name": "tesseract",
+      "ownerLogin": "sairamsharan",
+      "commitCount": 0
+    },
+    {
+      "name": "tesseract",
+      "ownerLogin": "COMPU-GLOBALHYPERMEGANET",
+      "commitCount": 0
+    },
+    {
+      "name": "tesseract",
+      "ownerLogin": "MiKurepoltt",
+      "commitCount": 0
+    }
+  ]
+}

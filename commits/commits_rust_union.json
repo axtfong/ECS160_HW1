@@ -1,0 +1,274 @@
+{
+  "name": "union",
+  "ownerLogin": "unionlabs",
+  "language": "Rust",
+  "commits": [
+    {
+      "sha": "faa9c0e5bc291882a679bdc5e856b2fcaebac0f3",
+      "message": "fix(site): set font weight (#5263)",
+      "modifiedFiles": [
+        "site/public/fonts/TT-Supermolot-Neue-Bold.ttf",
+        "site/public/fonts/TT-Supermolot-Neue-Variable.ttf",
+        "site/src/components/brand/FontDisplay.astro",
+        "site/src/styles/fonts.css"
+      ]
+    },
+    {
+      "sha": "0da19b3d96cae334c0b1da933705db400bf076d2",
+      "message": "feat(site): update to paid font",
+      "modifiedFiles": [
+        "site/public/fonts/Supermolot-bold.ttf",
+        "site/public/fonts/TT-Supermolot-Neue-Bold.ttf",
+        "site/src/styles/fonts.css"
+      ]
+    },
+    {
+      "sha": "66cd1239ba6757df1d5a6a71220a6b3aad04afa8",
+      "message": "Osmosis migration (#5262)",
+      "modifiedFiles": [
+        "cosmwasm/cosmwasm.nix",
+        "deployments/deployments.json",
+        "evm/contracts/CrosschainVault.sol",
+        "evm/tests/src/05-app/CrosschainVault.t.sol"
+      ]
+    },
+    {
+      "sha": "a466ca57a9f8cbfe119324c9506ad4123a1645c1",
+      "message": "fix(site): brand kit",
+      "modifiedFiles": [
+        "site/src/components/brand/FontDisplay.astro"
+      ]
+    },
+    {
+      "sha": "4761aba726ddccecbebe09d8c9e80166a29336a0",
+      "message": "fix(site): update font css",
+      "modifiedFiles": [
+        "site/src/styles/fonts.css"
+      ]
+    },
+    {
+      "sha": "758fa8dbedec8e7c6b923c81e6c9c4ae87cbd1b6",
+      "message": "feat(site): change ttf",
+      "modifiedFiles": [
+        "site/public/fonts/Supermolot-bold.ttf",
+        "site/public/fonts/TT-Supermolot-Neue-Variable.ttf"
+      ]
+    },
+    {
+      "sha": "854a57f00c0656201c2011615d592d6e8723c8f7",
+      "message": "fix(site): set font weight",
+      "modifiedFiles": [
+        "site/src/styles/fonts.css"
+      ]
+    },
+    {
+      "sha": "4cbbb72b45ae24f9f31a893978463f8607c51280",
+      "message": "chore(evm): comprehensive repay tests for vault",
+      "modifiedFiles": [
+        "evm/tests/src/05-app/CrosschainVault.t.sol"
+      ]
+    },
+    {
+      "sha": "264278213cef47e198e824f969a32dceb532a2c5",
+      "message": "chore(cosmwasm): update deployments",
+      "modifiedFiles": [
+        "deployments/deployments.json"
+      ]
+    },
+    {
+      "sha": "08f64897abc33ee2e3b390c547988abaf34df8a2",
+      "message": "chore(voyager): fix alloy deps (#5261)",
+      "modifiedFiles": [
+        "Cargo.lock",
+        "e2e/ensure-blocks/Cargo.toml",
+        "voyager/modules/client-bootstrap/arbitrum/Cargo.toml",
+        "voyager/modules/client-bootstrap/base/Cargo.toml",
+        "voyager/modules/client-bootstrap/bob/Cargo.toml",
+        "voyager/modules/client-bootstrap/ethereum/Cargo.toml",
+        "voyager/modules/client-bootstrap/parlia/Cargo.toml",
+        "voyager/modules/client-bootstrap/state-lens/ics23-ics23/Cargo.toml",
+        "voyager/modules/client-bootstrap/state-lens/ics23-mpt/Cargo.toml",
+        "voyager/modules/client-bootstrap/state-lens/ics23-smt/Cargo.toml",
+        "voyager/modules/client-bootstrap/trusted-mpt/Cargo.toml",
+        "voyager/modules/finality/arbitrum/Cargo.toml",
+        "voyager/modules/finality/base/Cargo.toml",
+        "voyager/modules/finality/berachain/Cargo.toml",
+        "voyager/modules/finality/bob/Cargo.toml",
+        "voyager/modules/finality/ethereum/Cargo.toml",
+        "voyager/modules/finality/parlia/Cargo.toml",
+        "voyager/modules/finality/trusted-evm/Cargo.toml",
+        "voyager/modules/proof/ethereum/Cargo.toml",
+        "voyager/modules/state/ethereum/Cargo.toml",
+        "voyager/plugins/client-update/arbitrum/Cargo.toml",
+        "voyager/plugins/client-update/base/Cargo.toml",
+        "voyager/plugins/client-update/berachain/Cargo.toml",
+        "voyager/plugins/client-update/bob/Cargo.toml",
+        "voyager/plugins/client-update/ethereum/Cargo.toml",
+        "voyager/plugins/client-update/parlia/Cargo.toml",
+        "voyager/plugins/client-update/state-lens/Cargo.toml",
+        "voyager/plugins/client-update/trusted-mpt/Cargo.toml",
+        "voyager/plugins/event-source/ethereum/Cargo.toml",
+        "voyager/plugins/transaction-batch/Cargo.toml",
+        "voyager/plugins/transaction/ethereum/Cargo.toml",
+        "voyager/plugins/zkgm-filter/Cargo.toml"
+      ]
+    },
+    {
+      "sha": "1b188209d9db5ee52f40fdaf65c847142c83d1e1",
+      "message": "chore(channels): update bsc ethereum channel (#5136)",
+      "modifiedFiles": [
+        "deployments/channels.json"
+      ]
+    },
+    {
+      "sha": "2a03eb41a66a06f863663e450e7e648f816c978d",
+      "message": "chore(cosmwasm): increase osmo gas",
+      "modifiedFiles": [
+        "cosmwasm/cosmwasm.nix"
+      ]
+    },
+    {
+      "sha": "4f1f2508dcc8d8e8019cf7cc9f77b6ac1daf4b42",
+      "message": "fix(evm): vault revert on repay failure",
+      "modifiedFiles": [
+        "evm/contracts/CrosschainVault.sol"
+      ]
+    },
+    {
+      "sha": "38d9895c139e4f19c558d873ac0acaf1ca490931",
+      "message": "chore(cosmwasm): support upgrading osmosis (#5260)",
+      "modifiedFiles": [
+        "cosmwasm/cosmwasm.nix"
+      ]
+    },
+    {
+      "sha": "781e32a42eb9dbf499ddd293f417691b3b772359",
+      "message": "chore(voyager): fix alloy deps",
+      "modifiedFiles": [
+        "Cargo.lock",
+        "e2e/ensure-blocks/Cargo.toml",
+        "voyager/modules/client-bootstrap/arbitrum/Cargo.toml",
+        "voyager/modules/client-bootstrap/base/Cargo.toml",
+        "voyager/modules/client-bootstrap/bob/Cargo.toml",
+        "voyager/modules/client-bootstrap/ethereum/Cargo.toml",
+        "voyager/modules/client-bootstrap/parlia/Cargo.toml",
+        "voyager/modules/client-bootstrap/state-lens/ics23-ics23/Cargo.toml",
+        "voyager/modules/client-bootstrap/state-lens/ics23-mpt/Cargo.toml",
+        "voyager/modules/client-bootstrap/state-lens/ics23-smt/Cargo.toml",
+        "voyager/modules/client-bootstrap/trusted-mpt/Cargo.toml",
+        "voyager/modules/finality/arbitrum/Cargo.toml",
+        "voyager/modules/finality/base/Cargo.toml",
+        "voyager/modules/finality/berachain/Cargo.toml",
+        "voyager/modules/finality/bob/Cargo.toml",
+        "voyager/modules/finality/ethereum/Cargo.toml",
+        "voyager/modules/finality/parlia/Cargo.toml",
+        "voyager/modules/finality/trusted-evm/Cargo.toml",
+        "voyager/modules/proof/ethereum/Cargo.toml",
+        "voyager/modules/state/ethereum/Cargo.toml",
+        "voyager/plugins/client-update/arbitrum/Cargo.toml",
+        "voyager/plugins/client-update/base/Cargo.toml",
+        "voyager/plugins/client-update/berachain/Cargo.toml",
+        "voyager/plugins/client-update/bob/Cargo.toml",
+        "voyager/plugins/client-update/ethereum/Cargo.toml",
+        "voyager/plugins/client-update/parlia/Cargo.toml",
+        "voyager/plugins/client-update/state-lens/Cargo.toml",
+        "voyager/plugins/client-update/trusted-mpt/Cargo.toml",
+        "voyager/plugins/event-source/ethereum/Cargo.toml",
+        "voyager/plugins/transaction-batch/Cargo.toml",
+        "voyager/plugins/transaction/ethereum/Cargo.toml",
+        "voyager/plugins/zkgm-filter/Cargo.toml"
+      ]
+    },
+    {
+      "sha": "459f1015e2f9d5e3aaf4bf8bd87fac2a9d21d4c4",
+      "message": "chore(cosmwasm): support upgrading osmosis",
+      "modifiedFiles": [
+        "cosmwasm/cosmwasm.nix"
+      ]
+    },
+    {
+      "sha": "45bd243f73b03294c4de88c6d922e24435f9a2a3",
+      "message": "fix(cosmwasm): allow for building contracts with -Oz (#5259)",
+      "modifiedFiles": [
+        "cosmwasm/cosmwasm.nix",
+        "tools/rust/buildWasmContract.nix"
+      ]
+    },
+    {
+      "sha": "bd889010e0e61c390e1cab3ac4f9af83668171d8",
+      "message": "fix(cosmwasm): allow for building contracts with -Oz",
+      "modifiedFiles": [
+        "cosmwasm/cosmwasm.nix",
+        "tools/rust/buildWasmContract.nix"
+      ]
+    },
+    {
+      "sha": "f89eac6d13cff2a27c72a6397ef1daaf913cc171",
+      "message": "feat(cosmwasm): improved force update client logic (#5258)",
+      "modifiedFiles": [
+        "cosmwasm/ibc-union/core/msg/src/msg.rs",
+        "cosmwasm/ibc-union/core/src/contract.rs"
+      ]
+    },
+    {
+      "sha": "17cf63e50923d52b9fc02e6bf29ce41986f8999a",
+      "message": "feat(cosmwasm): improved force update client logic",
+      "modifiedFiles": [
+        "cosmwasm/ibc-union/core/msg/src/msg.rs",
+        "cosmwasm/ibc-union/core/src/contract.rs"
+      ]
+    }
+  ],
+  "forks": [
+    {
+      "name": "union",
+      "ownerLogin": "youngcpp",
+      "commitCount": 0
+    },
+    {
+      "name": "union",
+      "ownerLogin": "defensible0020",
+      "commitCount": 0
+    },
+    {
+      "name": "union",
+      "ownerLogin": "iridescent0019",
+      "commitCount": 0
+    },
+    {
+      "name": "union",
+      "ownerLogin": "samgul511",
+      "commitCount": 0
+    },
+    {
+      "name": "union",
+      "ownerLogin": "minato3939",
+      "commitCount": 0
+    },
+    {
+      "name": "union",
+      "ownerLogin": "Jhosepin",
+      "commitCount": 0
+    },
+    {
+      "name": "union",
+      "ownerLogin": "Extazik",
+      "commitCount": 0
+    },
+    {
+      "name": "union",
+      "ownerLogin": "enlomy",
+      "commitCount": 0
+    },
+    {
+      "name": "union",
+      "ownerLogin": "wearedood",
+      "commitCount": 0
+    },
+    {
+      "name": "union",
+      "ownerLogin": "Ucay94",
+      "commitCount": 0
+    }
+  ]
+}
