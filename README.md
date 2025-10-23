@@ -1,8 +1,8 @@
 ## GitHub API Key Setup
 
 ### About Cached Data
-We've included pre-cached JSON data so you don't have to wait for API calls. If you want fresh data:
-1. Delete the JSON files in the project folder
+We've included pre-cached JSON data for the option of faster calls. If you want fresh data:
+1. Delete the JSON files in the root folder
 
 ### Getting Your GitHub Token
 1. Go to [GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)](https://github.com/settings/tokens)
