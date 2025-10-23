@@ -36,6 +36,7 @@ public class GitService {
 
         for (Commit commit : repo.getRecentCommits()) {
             for (String file : commit.getModifiedFiles()) {
+                // increment counter for each modified file, 0 if none
                 fileModificationCount.put(file, fileModificationCount.getOrDefault(file, 0) + 1);
             }
         }
@@ -70,6 +71,7 @@ public class GitService {
         if (repo.getRecentCommits() != null && !repo.getRecentCommits().isEmpty()) {
             List<String> sourceFileExtensions = Arrays.asList(".java", ".cpp", ".c", ".h", ".rs", ".go", ".py", ".js");
 
+            // check if any file has a source code extension
             for (Commit commit : repo.getRecentCommits()) {
                 for (String file : commit.getModifiedFiles()) {
                     for (String ext : sourceFileExtensions) {
@@ -84,7 +86,7 @@ public class GitService {
             String name = repo.getName().toLowerCase();
             String language = repo.getLanguage();
 
-            // use heuristic (check if these words exist)
+            // check if these words exist to identify tutorial
             boolean isTutorial = name.contains("guide") ||
                     name.contains("tutorial") ||
                     name.contains("awesome") ||
@@ -94,6 +96,7 @@ public class GitService {
                     name.contains("course") ||
                     name.contains("doc");
 
+            // source code if has a language and not a tutorial
             return language != null && !language.isEmpty() && !isTutorial;
         }
     }
@@ -109,6 +112,7 @@ public class GitService {
 
             String cloneCommand = "git clone --depth 1 " + repo.getHtmlUrl() + " " + destinationDir + "/" + repo.getName();
 
+            // execute git clone
             Process process = Runtime.getRuntime().exec(cloneCommand);
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -179,6 +183,7 @@ public class GitService {
             connection.setRequestProperty("Accept", "application/vnd.github+json");
             connection.setRequestProperty("X-GitHub-Api-Version", "2022-11-28");
 
+            // add api key authentication if available
             String apiKey = ConfigUtil.getGitHubApiKey();
             if (apiKey != null && !apiKey.isEmpty()) {
                 connection.setRequestProperty("Authorization", "Bearer " + apiKey);
@@ -226,9 +231,13 @@ public class GitService {
                 com.google.gson.JsonObject commitObj = element.getAsJsonObject();
                 Commit commit = new Commit();
 
+                // extract basic commit info
                 commit.setSha(commitObj.get("sha").getAsString());
+                
+                // extract commit message from nested commit object
                 commit.setMessage(commitObj.getAsJsonObject("commit").get("message").getAsString());
 
+                // fetch modified files for this commit
                 fetchCommitFiles(repo, commit);
 
                 commits.add(commit);
@@ -242,6 +251,7 @@ public class GitService {
 
     private void fetchCommitFiles(Repo repo, Commit commit) {
         try {
+            // get the list of files modified in this commit
             String endpoint = String.format("repos/%s/%s/commits/%s",
                     repo.getOwnerLogin(), repo.getName(), commit.getSha());
             String response = makeGitHubApiRequest(endpoint);
@@ -345,6 +355,7 @@ public class GitService {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             JsonObject repoData = new JsonObject();
 
+            // build json structure for repo data
             repoData.addProperty("name", repo.getName());
             repoData.addProperty("ownerLogin", repo.getOwnerLogin());
             repoData.addProperty("language", repo.getLanguage());
@@ -399,6 +410,7 @@ public class GitService {
                 return false;
             }
 
+            // reconstruct fork objects from json
             Gson gson = new Gson();
             try (FileReader reader = new FileReader(file)) {
                 JsonObject repoData = gson.fromJson(reader, JsonObject.class);
@@ -441,6 +453,7 @@ public class GitService {
     }
 
     public void fetchRecentCommitsWithCache(Repo repo, String language) {
+        // try to load from cache first, fetch from API only if cache miss
         if (loadCommitDataFromFile(repo, language)) {
             return;
         }
@@ -484,7 +497,7 @@ public class GitService {
                         ? issueObj.get("body").getAsString() : "");
                 issue.setState(issueObj.has("state") ? issueObj.get("state").getAsString() : "");
 
-                // parse dates
+                // parse ISO 8601 date strings to java.util.Date objects
                 if (issueObj.has("created_at") && !issueObj.get("created_at").isJsonNull()) {
                     try {
                         String createdAtStr = issueObj.get("created_at").getAsString();
