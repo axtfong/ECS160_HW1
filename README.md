@@ -1,7 +1,7 @@
 ## GitHub API Key Setup
 
 ### About Cached Data
-We've included pre-cached JSON data for the option of faster calls. If you want fresh data:
+We've included pre-cached JSON data for the option of faster calls. To test API calls to fetch fresh data from GitHub:
 1. Delete the JSON files in the root folder
 
 ### Getting Your GitHub Token
