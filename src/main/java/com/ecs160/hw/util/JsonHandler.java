@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.ecs160.hw.model.Repo;
+import com.ecs160.hw.model.Owner;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class JsonHandler {
     public List<Repo> loadReposFromFile(String filePath) {
         List<Repo> repos = new ArrayList<>();
         try (FileReader reader = new FileReader(filePath)) {
-            
+
             // parse top-level structure
             JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
 
@@ -35,7 +36,7 @@ public class JsonHandler {
                     items = gson.fromJson(reReader, JsonArray.class);
                 }
             }
-            
+
             System.out.println("Found " + items.size() + " repositories");
 
             // process repos
@@ -46,23 +47,29 @@ public class JsonHandler {
                 repo.setName(getString(repoObj, "name"));
                 repo.setHtmlUrl(getString(repoObj, "html_url"));
                 repo.setForksCount(getInt(repoObj, "forks_count"));
-                
+
                 // language might be null for some repos
                 if (repoObj.has("language") && !repoObj.get("language").isJsonNull()) {
                     repo.setLanguage(repoObj.get("language").getAsString());
                 }
-                
+
                 repo.setOpenIssuesCount(getInt(repoObj, "open_issues_count"));
                 repo.setStarCount(getInt(repoObj, "stargazers_count"));
 
                 if (repoObj.has("owner") && !repoObj.get("owner").isJsonNull()) {
-                    JsonObject owner = repoObj.getAsJsonObject("owner");
-                    repo.setOwnerLogin(getString(owner, "login"));
+                    JsonObject ownerObj = repoObj.getAsJsonObject("owner");
+                    Owner owner = new Owner();
+                    owner.setLogin(getString(ownerObj, "login"));
+                    owner.setId(getInt(ownerObj, "id"));
+                    owner.setHtmlUrl(getString(ownerObj, "html_url"));
+                    owner.setSiteAdmin(getBoolean(ownerObj, "site_admin"));
+                    repo.setOwner(owner);
+                    repo.setOwnerLogin(owner.getLogin());
                 }
 
                 repos.add(repo);
             }
-            
+
         } catch (IOException e) {
             System.err.println("Error loading repositories from file: " + e.getMessage());
             e.printStackTrace();
@@ -70,7 +77,7 @@ public class JsonHandler {
             System.err.println("Unexpected error parsing JSON: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         return repos;
     }
 
@@ -85,7 +92,7 @@ public class JsonHandler {
         }
         return "";
     }
-    
+
     private int getInt(JsonObject obj, String key) {
         try {
             if (obj.has(key) && !obj.get(key).isJsonNull()) {
@@ -95,5 +102,16 @@ public class JsonHandler {
             System.err.println("Error getting int for key " + key + ": " + e.getMessage());
         }
         return 0;
+    }
+
+    private boolean getBoolean(JsonObject obj, String key) {
+        try {
+            if (obj.has(key) && !obj.get(key).isJsonNull()) {
+                return obj.get(key).getAsBoolean();
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting boolean for key " + key + ": " + e.getMessage());
+        }
+        return false;
     }
 }

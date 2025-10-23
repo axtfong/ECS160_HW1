@@ -2,6 +2,7 @@ package com.ecs160.hw.service;
 
 import com.ecs160.hw.model.Commit;
 import com.ecs160.hw.model.Repo;
+import com.ecs160.hw.model.Issue;
 import com.ecs160.hw.util.ConfigUtil;
 import redis.clients.jedis.Jedis;
 import com.google.gson.Gson;
@@ -32,13 +33,13 @@ public class GitService {
 
     public Map<String, Integer> calculateFileModificationCount(Repo repo) {
         Map<String, Integer> fileModificationCount = new HashMap<>();
-        
+
         for (Commit commit : repo.getRecentCommits()) {
             for (String file : commit.getModifiedFiles()) {
                 fileModificationCount.put(file, fileModificationCount.getOrDefault(file, 0) + 1);
             }
         }
-        
+
         return fileModificationCount;
     }
 
@@ -46,7 +47,7 @@ public class GitService {
         Map<String, Integer> fileModificationCount = calculateFileModificationCount(repo);
 
         List<Map.Entry<String, Integer>> sortedFiles = new ArrayList<>(fileModificationCount.entrySet());
-        
+
         // stable sort by modification count then by filename
         sortedFiles.sort((a, b) -> {
             int countComparison = b.getValue().compareTo(a.getValue());
@@ -61,14 +62,14 @@ public class GitService {
         for (int i = 0; i < Math.min(3, sortedFiles.size()); i++) {
             top3Files.add(sortedFiles.get(i).getKey());
         }
-        
+
         return top3Files;
     }
 
     public boolean isRepoContainingSourceCode(Repo repo) {
         if (repo.getRecentCommits() != null && !repo.getRecentCommits().isEmpty()) {
             List<String> sourceFileExtensions = Arrays.asList(".java", ".cpp", ".c", ".h", ".rs", ".go", ".py", ".js");
-            
+
             for (Commit commit : repo.getRecentCommits()) {
                 for (String file : commit.getModifiedFiles()) {
                     for (String ext : sourceFileExtensions) {
@@ -82,16 +83,16 @@ public class GitService {
         } else {
             String name = repo.getName().toLowerCase();
             String language = repo.getLanguage();
-            
+
             // use heuristic (check if these words exist)
-            boolean isTutorial = name.contains("guide") || 
-                                name.contains("tutorial") ||
-                                name.contains("awesome") ||
-                                name.contains("example") ||
-                                name.contains("learn") ||
-                                name.contains("book") ||
-                                name.contains("course") ||
-                                name.contains("doc");
+            boolean isTutorial = name.contains("guide") ||
+                    name.contains("tutorial") ||
+                    name.contains("awesome") ||
+                    name.contains("example") ||
+                    name.contains("learn") ||
+                    name.contains("book") ||
+                    name.contains("course") ||
+                    name.contains("doc");
 
             return language != null && !language.isEmpty() && !isTutorial;
         }
@@ -105,9 +106,9 @@ public class GitService {
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-            
+
             String cloneCommand = "git clone --depth 1 " + repo.getHtmlUrl() + " " + destinationDir + "/" + repo.getName();
-            
+
             Process process = Runtime.getRuntime().exec(cloneCommand);
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -115,10 +116,10 @@ public class GitService {
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
             }
-            
+
             int exitCode = process.waitFor();
             System.out.println("Clone completed with exit code: " + exitCode);
-            
+
         } catch (Exception e) {
             System.err.println("Error cloning repository: " + e.getMessage());
             e.printStackTrace();
@@ -128,6 +129,7 @@ public class GitService {
     public void saveRepoToRedis(Repo repo) {
         String repoKey = "reponame:" + repo.getName();
 
+        // save repo info
         jedis.hset(repoKey, "name", repo.getName());
         jedis.hset(repoKey, "ownerLogin", repo.getOwnerLogin());
         jedis.hset(repoKey, "htmlUrl", repo.getHtmlUrl());
@@ -137,10 +139,36 @@ public class GitService {
         jedis.hset(repoKey, "starCount", String.valueOf(repo.getStarCount()));
         jedis.hset(repoKey, "commitCount", String.valueOf(repo.getCommitCount()));
 
-        String ownerKey = "owner:" + repo.getOwnerLogin();
-        jedis.hset(ownerKey, "login", repo.getOwnerLogin());
+        // save owner info
+        if (repo.getOwner() != null) {
+            String ownerKey = "owner:" + repo.getOwner().getLogin();
+            jedis.hset(ownerKey, "login", repo.getOwner().getLogin());
+            jedis.hset(ownerKey, "id", String.valueOf(repo.getOwner().getId()));
+            jedis.hset(ownerKey, "htmlUrl", repo.getOwner().getHtmlUrl() != null ? repo.getOwner().getHtmlUrl() : "");
+            jedis.hset(ownerKey, "siteAdmin", String.valueOf(repo.getOwner().isSiteAdmin()));
+            jedis.hset(repoKey, "owner", ownerKey);
+        }
 
-        jedis.hset(repoKey, "owner", ownerKey);
+        // save issues info
+        if (repo.getIssues() != null && !repo.getIssues().isEmpty()) {
+            for (int i = 0; i < repo.getIssues().size(); i++) {
+                Issue issue = repo.getIssues().get(i);
+                String issueKey = "issue:" + repo.getName() + ":" + i;
+
+                jedis.hset(issueKey, "title", issue.getTitle() != null ? issue.getTitle() : "");
+                jedis.hset(issueKey, "body", issue.getBody() != null ? issue.getBody() : "");
+                jedis.hset(issueKey, "state", issue.getState() != null ? issue.getState() : "");
+
+                if (issue.getCreatedAt() != null) {
+                    jedis.hset(issueKey, "createdAt", issue.getCreatedAt().toString());
+                }
+                if (issue.getUpdatedAt() != null) {
+                    jedis.hset(issueKey, "updatedAt", issue.getUpdatedAt().toString());
+                }
+
+                jedis.sadd("repo:" + repo.getName() + ":issues", issueKey);
+            }
+        }
     }
 
     private String makeGitHubApiRequest(String endpoint) {
@@ -174,9 +202,9 @@ public class GitService {
     public void fetchRecentCommits(Repo repo) {
         try {
             String endpoint = String.format("repos/%s/%s/commits?per_page=50",
-                repo.getOwnerLogin(), repo.getName());
+                    repo.getOwnerLogin(), repo.getName());
             String response = makeGitHubApiRequest(endpoint);
-            
+
             if (response != null) {
                 parseCommitsFromResponse(repo, response);
             } else {
@@ -192,20 +220,20 @@ public class GitService {
         try {
             com.google.gson.Gson gson = new com.google.gson.Gson();
             com.google.gson.JsonArray commitsArray = gson.fromJson(response, com.google.gson.JsonArray.class);
-            
+
             List<Commit> commits = new ArrayList<>();
             for (com.google.gson.JsonElement element : commitsArray) {
                 com.google.gson.JsonObject commitObj = element.getAsJsonObject();
                 Commit commit = new Commit();
-                
+
                 commit.setSha(commitObj.get("sha").getAsString());
                 commit.setMessage(commitObj.getAsJsonObject("commit").get("message").getAsString());
 
-                fetchCommitFilesSimplified(repo, commit);
-                
+                fetchCommitFiles(repo, commit);
+
                 commits.add(commit);
             }
-            
+
             repo.setRecentCommits(commits);
         } catch (Exception e) {
             System.err.println("Error parsing commits: " + e.getMessage());
@@ -214,43 +242,15 @@ public class GitService {
 
     private void fetchCommitFiles(Repo repo, Commit commit) {
         try {
-            String endpoint = String.format("repos/%s/%s/commits/%s", 
-                repo.getOwnerLogin(), repo.getName(), commit.getSha());
+            String endpoint = String.format("repos/%s/%s/commits/%s",
+                    repo.getOwnerLogin(), repo.getName(), commit.getSha());
             String response = makeGitHubApiRequest(endpoint);
-            
-            if (response != null) {
-                com.google.gson.Gson gson = new com.google.gson.Gson();
-                com.google.gson.JsonObject commitObj = gson.fromJson(response, com.google.gson.JsonObject.class);
-                com.google.gson.JsonArray filesArray = commitObj.getAsJsonArray("files");
-                
-                for (com.google.gson.JsonElement fileElement : filesArray) {
-                    com.google.gson.JsonObject fileObj = fileElement.getAsJsonObject();
-                    String filename = fileObj.get("filename").getAsString();
-                    commit.addModifiedFile(filename);
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Error fetching commit files: " + e.getMessage());
-        }
-    }
 
-    private void fetchCommitFilesSimplified(Repo repo, Commit commit) {
-        // Skip fetching files for most commits to speed up processing
-        // Only fetch files for the first few commits
-        if (repo.getRecentCommits().indexOf(commit) >= 50) {
-            return;
-        }
-        
-        try {
-            String endpoint = String.format("repos/%s/%s/commits/%s", 
-                repo.getOwnerLogin(), repo.getName(), commit.getSha());
-            String response = makeGitHubApiRequest(endpoint);
-            
             if (response != null) {
                 com.google.gson.Gson gson = new com.google.gson.Gson();
                 com.google.gson.JsonObject commitObj = gson.fromJson(response, com.google.gson.JsonObject.class);
                 com.google.gson.JsonArray filesArray = commitObj.getAsJsonArray("files");
-                
+
                 for (com.google.gson.JsonElement fileElement : filesArray) {
                     com.google.gson.JsonObject fileObj = fileElement.getAsJsonObject();
                     String filename = fileObj.get("filename").getAsString();
@@ -265,9 +265,9 @@ public class GitService {
     public void fetchForks(Repo repo) {
         try {
             String endpoint = String.format("repos/%s/%s/forks?per_page=20&sort=newest",
-                repo.getOwnerLogin(), repo.getName());
+                    repo.getOwnerLogin(), repo.getName());
             String response = makeGitHubApiRequest(endpoint);
-            
+
             if (response != null) {
                 parseForksFromResponse(repo, response);
             } else {
@@ -283,45 +283,47 @@ public class GitService {
         try {
             com.google.gson.Gson gson = new com.google.gson.Gson();
             com.google.gson.JsonArray forksArray = gson.fromJson(response, com.google.gson.JsonArray.class);
-            
+
             List<Repo> forks = new ArrayList<>();
             for (com.google.gson.JsonElement element : forksArray) {
                 com.google.gson.JsonObject forkObj = element.getAsJsonObject();
                 Repo fork = new Repo();
-                
+
                 fork.setName(forkObj.get("name").getAsString());
                 fork.setOwnerLogin(forkObj.getAsJsonObject("owner").get("login").getAsString());
                 fork.setHtmlUrl(forkObj.get("html_url").getAsString());
                 fork.setStarCount(forkObj.get("stargazers_count").getAsInt());
                 fork.setForksCount(forkObj.get("forks_count").getAsInt());
                 fork.setOpenIssuesCount(forkObj.get("open_issues_count").getAsInt());
-                
-                // Skip fetching commit count to speed up processing
-                // Set a default value instead
-                fork.setCommitCount(0);
-                
+
+                fetchCommitCount(fork);
+
                 forks.add(fork);
             }
-            
+
             repo.setForks(forks);
         } catch (Exception e) {
             System.err.println("Error parsing forks: " + e.getMessage());
         }
     }
 
-    // Fetch commit count for a repository
     private void fetchCommitCount(Repo repo) {
         try {
-            String endpoint = String.format("repos/%s/%s/commits?per_page=1", 
-                repo.getOwnerLogin(), repo.getName());
+            // get commits from last 30 days
+            String since = java.time.Instant.now()
+                    .minus(30, java.time.temporal.ChronoUnit.DAYS)
+                    .toString();
+
+            String endpoint = String.format("repos/%s/%s/commits?per_page=100&since=%s",
+                    repo.getOwnerLogin(), repo.getName(), since);
             String response = makeGitHubApiRequest(endpoint);
-            
+
             if (response != null) {
-                // Parse the response to get total commit count
-                // Note: This is a simplified approach - in reality, we'd need to handle pagination
                 com.google.gson.Gson gson = new com.google.gson.Gson();
                 com.google.gson.JsonArray commitsArray = gson.fromJson(response, com.google.gson.JsonArray.class);
                 repo.setCommitCount(commitsArray.size());
+            } else {
+                repo.setCommitCount(0);
             }
         } catch (Exception e) {
             System.err.println("Error fetching commit count for " + repo.getName() + ": " + e.getMessage());
@@ -329,33 +331,30 @@ public class GitService {
         }
     }
 
-    // Save commit data to JSON file
     public void saveCommitDataToFile(Repo repo, String language) {
         try {
-            // Sanitize language name for filename (remove slashes and other invalid characters)
+            // remove slashes and other invalid chars
             String sanitizedLanguage = language.toLowerCase()
-                .replace("/", "_")
-                .replace("+", "plus")
-                .replace(" ", "_")
-                .replace("\\", "_");
+                    .replace("/", "_")
+                    .replace("+", "plus")
+                    .replace(" ", "_")
+                    .replace("\\", "_");
             String filename = String.format("commits/commits_%s_%s.json", sanitizedLanguage, repo.getName());
             File file = new File(filename);
-            
+
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             JsonObject repoData = new JsonObject();
-            
-            // Save basic repo info
+
             repoData.addProperty("name", repo.getName());
             repoData.addProperty("ownerLogin", repo.getOwnerLogin());
             repoData.addProperty("language", repo.getLanguage());
-            
-            // Save commits
+
             JsonArray commitsArray = new JsonArray();
             for (Commit commit : repo.getRecentCommits()) {
                 JsonObject commitObj = new JsonObject();
                 commitObj.addProperty("sha", commit.getSha());
                 commitObj.addProperty("message", commit.getMessage());
-                
+
                 JsonArray filesArray = new JsonArray();
                 for (String fileName : commit.getModifiedFiles()) {
                     filesArray.add(fileName);
@@ -364,8 +363,7 @@ public class GitService {
                 commitsArray.add(commitObj);
             }
             repoData.add("commits", commitsArray);
-            
-            // Save forks
+
             JsonArray forksArray = new JsonArray();
             for (Repo fork : repo.getForks()) {
                 JsonObject forkObj = new JsonObject();
@@ -375,38 +373,36 @@ public class GitService {
                 forksArray.add(forkObj);
             }
             repoData.add("forks", forksArray);
-            
+
             try (FileWriter writer = new FileWriter(file)) {
                 gson.toJson(repoData, writer);
             }
-            
+
             System.out.println("Saved commit data for " + repo.getName() + " to " + filename);
         } catch (Exception e) {
             System.err.println("Error saving commit data for " + repo.getName() + ": " + e.getMessage());
         }
     }
 
-    // Load commit data from JSON file
     public boolean loadCommitDataFromFile(Repo repo, String language) {
         try {
-            // Sanitize language name for filename (remove slashes and other invalid characters)
+            // remove slashes and other invalid chars
             String sanitizedLanguage = language.toLowerCase()
-                .replace("/", "_")
-                .replace("+", "plus")
-                .replace(" ", "_")
-                .replace("\\", "_");
+                    .replace("/", "_")
+                    .replace("+", "plus")
+                    .replace(" ", "_")
+                    .replace("\\", "_");
             String filename = String.format("commits/commits_%s_%s.json", sanitizedLanguage, repo.getName());
             File file = new File(filename);
-            
+
             if (!file.exists()) {
                 return false;
             }
-            
+
             Gson gson = new Gson();
             try (FileReader reader = new FileReader(file)) {
                 JsonObject repoData = gson.fromJson(reader, JsonObject.class);
-                
-                // Load commits
+
                 JsonArray commitsArray = repoData.getAsJsonArray("commits");
                 List<Commit> commits = new ArrayList<>();
                 for (int i = 0; i < commitsArray.size(); i++) {
@@ -414,7 +410,7 @@ public class GitService {
                     Commit commit = new Commit();
                     commit.setSha(commitObj.get("sha").getAsString());
                     commit.setMessage(commitObj.get("message").getAsString());
-                    
+
                     JsonArray filesArray = commitObj.getAsJsonArray("modifiedFiles");
                     for (int j = 0; j < filesArray.size(); j++) {
                         commit.addModifiedFile(filesArray.get(j).getAsString());
@@ -422,8 +418,7 @@ public class GitService {
                     commits.add(commit);
                 }
                 repo.setRecentCommits(commits);
-                
-                // Load forks
+
                 JsonArray forksArray = repoData.getAsJsonArray("forks");
                 List<Repo> forks = new ArrayList<>();
                 for (int i = 0; i < forksArray.size(); i++) {
@@ -435,7 +430,7 @@ public class GitService {
                     forks.add(fork);
                 }
                 repo.setForks(forks);
-                
+
                 System.out.println("Loaded cached commit data for " + repo.getName());
                 return true;
             }
@@ -445,19 +440,75 @@ public class GitService {
         }
     }
 
-    // Enhanced method to fetch commits with caching
     public void fetchRecentCommitsWithCache(Repo repo, String language) {
-        // Try to load from cache first
         if (loadCommitDataFromFile(repo, language)) {
             return;
         }
-        
-        // If not in cache, fetch from API
+
         System.out.println("No cached data found for " + repo.getName() + ", fetching from API...");
         fetchRecentCommits(repo);
         fetchForks(repo);
-        
-        // Save to cache for next time
+
         saveCommitDataToFile(repo, language);
+    }
+
+    public void fetchIssues(Repo repo) {
+        try {
+            String endpoint = String.format("repos/%s/%s/issues?state=open&per_page=10",
+                    repo.getOwnerLogin(), repo.getName());
+            String response = makeGitHubApiRequest(endpoint);
+
+            if (response != null) {
+                parseIssuesFromResponse(repo, response);
+            } else {
+                repo.setIssues(new ArrayList<>());
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching issues for " + repo.getName() + ": " + e.getMessage());
+            repo.setIssues(new ArrayList<>());
+        }
+    }
+
+    private void parseIssuesFromResponse(Repo repo, String response) {
+        try {
+            com.google.gson.Gson gson = new com.google.gson.Gson();
+            com.google.gson.JsonArray issuesArray = gson.fromJson(response, com.google.gson.JsonArray.class);
+
+            List<Issue> issues = new ArrayList<>();
+            for (com.google.gson.JsonElement element : issuesArray) {
+                com.google.gson.JsonObject issueObj = element.getAsJsonObject();
+                Issue issue = new Issue();
+
+                issue.setTitle(issueObj.has("title") ? issueObj.get("title").getAsString() : "");
+                issue.setBody(issueObj.has("body") && !issueObj.get("body").isJsonNull()
+                        ? issueObj.get("body").getAsString() : "");
+                issue.setState(issueObj.has("state") ? issueObj.get("state").getAsString() : "");
+
+                // parse dates
+                if (issueObj.has("created_at") && !issueObj.get("created_at").isJsonNull()) {
+                    try {
+                        String createdAtStr = issueObj.get("created_at").getAsString();
+                        issue.setCreatedAt(java.util.Date.from(java.time.Instant.parse(createdAtStr)));
+                    } catch (Exception e) {
+                        System.err.println("Error parsing created_at date: " + e.getMessage());
+                    }
+                }
+
+                if (issueObj.has("updated_at") && !issueObj.get("updated_at").isJsonNull()) {
+                    try {
+                        String updatedAtStr = issueObj.get("updated_at").getAsString();
+                        issue.setUpdatedAt(java.util.Date.from(java.time.Instant.parse(updatedAtStr)));
+                    } catch (Exception e) {
+                        System.err.println("Error parsing updated_at date: " + e.getMessage());
+                    }
+                }
+
+                issues.add(issue);
+            }
+
+            repo.setIssues(issues);
+        } catch (Exception e) {
+            System.err.println("Error parsing issues: " + e.getMessage());
+        }
     }
 }

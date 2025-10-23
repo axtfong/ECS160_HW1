@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Repo {
     private String name;
+    private Owner owner;
     private String ownerLogin;
     private String htmlUrl;
     private int forksCount;
@@ -22,91 +23,56 @@ public class Repo {
         this.issues = new ArrayList<>();
     }
 
-    public String getName() {
-        return name;
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
+
+    public Owner getOwner() { return owner; }
+
+    public void setOwner(Owner owner) {
+        this.owner = owner;
+        if (owner != null) {
+            this.ownerLogin = owner.getLogin();
+        }
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getOwnerLogin() { return ownerLogin; }
 
-    public String getOwnerLogin() {
-        return ownerLogin;
-    }
+    public void setOwnerLogin(String ownerLogin) { this.ownerLogin = ownerLogin; }
 
-    public void setOwnerLogin(String ownerLogin) {
-        this.ownerLogin = ownerLogin;
-    }
+    public String getHtmlUrl() { return htmlUrl; }
 
-    public String getHtmlUrl() {
-        return htmlUrl;
-    }
+    public void setHtmlUrl(String htmlUrl) { this.htmlUrl = htmlUrl; }
 
-    public void setHtmlUrl(String htmlUrl) {
-        this.htmlUrl = htmlUrl;
-    }
+    public int getForksCount() { return forksCount; }
 
-    public int getForksCount() {
-        return forksCount;
-    }
+    public void setForksCount(int forksCount) { this.forksCount = forksCount; }
 
-    public void setForksCount(int forksCount) {
-        this.forksCount = forksCount;
-    }
+    public String getLanguage() { return language; }
 
-    public String getLanguage() {
-        return language;
-    }
+    public void setLanguage(String language) { this.language = language; }
 
-    public void setLanguage(String language) {
-        this.language = language;
-    }
+    public int getOpenIssuesCount() { return openIssuesCount; }
 
-    public int getOpenIssuesCount() {
-        return openIssuesCount;
-    }
+    public void setOpenIssuesCount(int openIssuesCount) { this.openIssuesCount = openIssuesCount; }
 
-    public void setOpenIssuesCount(int openIssuesCount) {
-        this.openIssuesCount = openIssuesCount;
-    }
+    public List<Repo> getForks() { return forks; }
 
-    public List<Repo> getForks() {
-        return forks;
-    }
+    public void setForks(List<Repo> forks) { this.forks = forks; }
 
-    public void setForks(List<Repo> forks) {
-        this.forks = forks;
-    }
+    public List<Commit> getRecentCommits() { return recentCommits; }
 
-    public List<Commit> getRecentCommits() {
-        return recentCommits;
-    }
+    public void setRecentCommits(List<Commit> recentCommits) { this.recentCommits = recentCommits; }
 
-    public void setRecentCommits(List<Commit> recentCommits) {
-        this.recentCommits = recentCommits;
-    }
+    public List<Issue> getIssues() { return issues; }
 
-    public List<Issue> getIssues() {
-        return issues;
-    }
+    public void setIssues(List<Issue> issues) { this.issues = issues; }
 
-    public void setIssues(List<Issue> issues) {
-        this.issues = issues;
-    }
+    public int getCommitCount() { return commitCount; }
 
-    public int getCommitCount() {
-        return commitCount;
-    }
+    public void setCommitCount(int commitCount) { this.commitCount = commitCount; }
 
-    public void setCommitCount(int commitCount) {
-        this.commitCount = commitCount;
-    }
+    public int getStarCount() { return starCount; }
 
-    public int getStarCount() {
-        return starCount;
-    }
-
-    public void setStarCount(int starCount) {
-        this.starCount = starCount;
-    }
+    public void setStarCount(int starCount) { this.starCount = starCount; }
 }

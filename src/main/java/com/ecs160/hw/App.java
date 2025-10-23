@@ -99,7 +99,7 @@ public class App
                 .uri(URI.create(url))
                 .header("Accept", "application/vnd.github.v3+json");
 
-        // Add authentication token if available
+        // add authentication token if available
         String apiKey = ConfigUtil.getGitHubApiKey();
         if (apiKey != null && !apiKey.isEmpty()) {
             requestBuilder.header("Authorization", "Bearer " + apiKey);
@@ -124,6 +124,13 @@ public class App
         int openIssues = 0;
         int newCommitsInForks = 0;
 
+        // load fork data first for all repos
+        for (Repo repo : repos) {
+            gitService.fetchRecentCommitsWithCache(repo, language);
+            // Fetch issues for each repo
+            gitService.fetchIssues(repo);
+        }
+
         // stats
         for (Repo repo : repos) {
             totalStars += repo.getStarCount();
@@ -141,8 +148,6 @@ public class App
         for (int i = 0; i < repos.size(); i++) {
             Repo repo = repos.get(i);
 
-            gitService.fetchRecentCommitsWithCache(repo, language);
-
             List<String> top3ModifiedFiles = gitService.getTop3ModifiedFiles(repo);
 
             System.out.println((i + 1) + "/10: Top 3 modified files: ");
@@ -158,12 +163,13 @@ public class App
 
         int forksToCheck = Math.min(20, repo.getForks().size());
 
-        // Start from the end of the list to get the most recent forks
+        // start from end of list to get the most recent forks
         int startIndex = Math.max(0, repo.getForks().size() - forksToCheck);
 
         for (int i = startIndex; i < repo.getForks().size(); i++) {
             Repo fork = repo.getForks().get(i);
-            count += fork.getCommitCount();
+            int forkCommits = fork.getCommitCount();
+            count += forkCommits;
         }
 
         return count;
