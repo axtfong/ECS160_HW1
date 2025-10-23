@@ -3,7 +3,7 @@
 ### About Cached Data
 We've included pre-cached JSON data for the option of faster calls. To test API calls to fetch fresh data from GitHub:
 1. Delete the JSON files in the root folder
-2. Delete the JSON files in the commits directory. **Not the commits directory itself**
+2. Delete the JSON files in the commits directory **Not the commits directory itself**
 
 ### Getting Your GitHub Token
 1. Go to [GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)](https://github.com/settings/tokens)
