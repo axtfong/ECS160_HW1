@@ -8,10 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-/**
- * Microservice A: Issue Summarizer
- * Provides an endpoint that accepts a JSON of a Github issue and returns an Issue summary.
- */
+// microservice class for issue summarizer
 @Microservice
 public class IssueSummarizerMicroservice {
     private OllamaClient ollamaClient;
@@ -25,16 +22,16 @@ public class IssueSummarizerMicroservice {
     @Endpoint(url = "summarize_issue")
     public String handleRequest(String input) {
         try {
-            // Parse input JSON (GitHub issue)
+            // parses input json (github issue)
             JsonObject issueJson = JsonParser.parseString(input).getAsJsonObject();
             
-            // Extract relevant fields
+            // extracts relevant fields
             String title = issueJson.has("title") ? issueJson.get("title").getAsString() : "";
             String body = issueJson.has("body") ? issueJson.get("body").getAsString() : "";
             String description = issueJson.has("description") ? issueJson.get("description").getAsString() : 
                                (body != null && !body.isEmpty() ? body : title);
             
-            // Create prompt for Ollama
+            // creates prompt for ollama
             String prompt = String.format(
                 "Summarize this GitHub issue into a bug report format. " +
                 "Extract the bug type, estimated line number if mentioned, description, and filename if mentioned.\n\n" +
@@ -51,10 +48,10 @@ public class IssueSummarizerMicroservice {
                 title, description
             );
             
-            // Get response from Ollama
+            // gets response from ollama
             String response = ollamaClient.generate(prompt);
             
-            // Try to parse the response as JSON
+            // tries to parse response as json
             try {
                 JsonObject jsonResponse = parseJsonFromResponse(response);
                 if (jsonResponse != null) {
@@ -65,7 +62,7 @@ public class IssueSummarizerMicroservice {
                 System.err.println("Error parsing JSON: " + e.getMessage());
             }
             
-            // Fallback: create a basic bug issue
+            // fallback: creates a basic bug issue
             BugIssue bugIssue = new BugIssue();
             bugIssue.setBug_type("Unknown");
             bugIssue.setLine(-1);
@@ -76,7 +73,7 @@ public class IssueSummarizerMicroservice {
             System.err.println("Error summarizing issue: " + e.getMessage());
             e.printStackTrace();
             
-            // Return error response
+            // returns error response
             BugIssue errorIssue = new BugIssue();
             errorIssue.setBug_type("Error");
             errorIssue.setLine(-1);
@@ -86,19 +83,17 @@ public class IssueSummarizerMicroservice {
         }
     }
     
-    /**
-     * Safely parses JSON from LLM response, handling various formats.
-     */
+    // safely parses json from llm response, handling various formats
     private JsonObject parseJsonFromResponse(String response) {
         if (response == null || response.trim().isEmpty()) {
             return null;
         }
         
         try {
-            // Try parsing directly first
+            // tries parsing directly first
             return JsonParser.parseString(response).getAsJsonObject();
         } catch (Exception e) {
-            // Try extracting JSON object from response
+            // tries extracting json object from response
             int jsonStart = response.indexOf("{");
             int jsonEnd = response.lastIndexOf("}") + 1;
             if (jsonStart >= 0 && jsonEnd > jsonStart) {
@@ -106,7 +101,7 @@ public class IssueSummarizerMicroservice {
                     String jsonStr = response.substring(jsonStart, jsonEnd);
                     return JsonParser.parseString(jsonStr).getAsJsonObject();
                 } catch (Exception ex) {
-                    // Continue to return null
+                    // continues to return null
                 }
             }
         }
@@ -114,13 +109,11 @@ public class IssueSummarizerMicroservice {
         return null;
     }
     
-    /**
-     * Safely parses BugIssue from JSON, handling "None" values and other edge cases.
-     */
+    // safely parses bug issue from json, handling none values and other edge cases
     private BugIssue parseBugIssueFromJson(JsonObject json) {
         BugIssue bugIssue = new BugIssue();
         
-        // Handle bug_type
+        // handles bug_type
         if (json.has("bug_type")) {
             try {
                 bugIssue.setBug_type(json.get("bug_type").getAsString());
@@ -131,7 +124,7 @@ public class IssueSummarizerMicroservice {
             bugIssue.setBug_type("Unknown");
         }
         
-        // Handle line - convert "None" or invalid values to -1
+        // handles line, converts none or invalid values to -1
         if (json.has("line")) {
             try {
                 String lineStr = json.get("line").getAsString().trim();
@@ -143,7 +136,7 @@ public class IssueSummarizerMicroservice {
                 }
             } catch (Exception e) {
                 try {
-                    // Try as integer
+                    // tries as integer
                     bugIssue.setLine(json.get("line").getAsInt());
                 } catch (Exception ex) {
                     bugIssue.setLine(-1);
@@ -153,7 +146,7 @@ public class IssueSummarizerMicroservice {
             bugIssue.setLine(-1);
         }
         
-        // Handle description
+        // handles description
         if (json.has("description")) {
             try {
                 bugIssue.setDescription(json.get("description").getAsString());
@@ -164,7 +157,7 @@ public class IssueSummarizerMicroservice {
             bugIssue.setDescription("");
         }
         
-        // Handle filename
+        // handles filename
         if (json.has("filename")) {
             try {
                 String filename = json.get("filename").getAsString();

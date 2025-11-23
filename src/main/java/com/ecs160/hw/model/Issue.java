@@ -3,7 +3,7 @@ package com.ecs160.hw.model;
 import java.util.Date;
 
 public class Issue {
-    private String id;  // e.g., "iss-101"
+    private String id; 
     private String title;
     private String body;
     private String state;
@@ -50,7 +50,7 @@ public class Issue {
 
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
 
-    // Description is the same as body for our purposes
+    // description is the same as body for our purposes
     public String getDescription() {
         return body;
     }

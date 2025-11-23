@@ -24,9 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * Main application for HW2.
- */
 public class App {
     private static final String SELECTED_REPO_FILE = "selected_repo.dat";
     private static final String ANALYSIS_FILE = "ANALYSIS.md";
@@ -52,12 +49,13 @@ public class App {
     
     public void run() {
         try {
-            // Start microservices
+            // starts microservices
             System.out.println("Starting microservices...");
             startMicroservices();
-            Thread.sleep(2000); // Wait for server to start
+            // wait for server to start
+            Thread.sleep(2000); 
             
-            // Load selected repo
+            // loads selected repo
             System.out.println("Loading selected repository...");
             String repoId = loadSelectedRepo();
             if (repoId == null) {
@@ -65,7 +63,7 @@ public class App {
                 return;
             }
             
-            // Load repo and issues from Redis
+            // loads repo and issues from redis
             System.out.println("Loading repository from Redis...");
             RepoModel repo = loadRepoFromRedis(repoId);
             if (repo == null) {
@@ -76,26 +74,26 @@ public class App {
             List<IssueModel> issues = loadIssuesFromRedis(repo.getIssues());
             System.out.println("Loaded " + issues.size() + " issues");
             
-            // Clone repository
+            // clones repository
             System.out.println("Cloning repository...");
             String repoPath = cloneRepository(repo.getUrl());
             
-            // Load files to analyze
+            // loads files to analyze
             List<String> filesToAnalyze = loadFilesToAnalyze();
             
-            // Step 1: Invoke Microservice A to summarize issues
+            // step 1: invokes microservice a to summarize issues
             System.out.println("Summarizing GitHub issues...");
             List<BugIssue> issueList1 = summarizeIssues(issues);
             
-            // Step 2: Invoke Microservice B to find bugs in C files
+            // step 2: invokes microservice b to find bugs in c files
             System.out.println("Finding bugs in C files...");
             List<BugIssue> issueList2 = findBugsInFiles(repoPath, filesToAnalyze);
             
-            // Step 3: Invoke Microservice C to compare and find common issues
+            // step 3: invokes microservice c to compare and find common issues
             System.out.println("Comparing issues...");
             List<BugIssue> commonIssues = compareIssues(issueList1, issueList2);
             
-            // Print results
+            // prints results
             System.out.println("\n=== RESULTS ===");
             System.out.println("Issues from GitHub: " + issueList1.size());
             System.out.println("Bugs found by LLM: " + issueList2.size());
@@ -107,10 +105,10 @@ public class App {
                     ": " + issue.getDescription());
             }
             
-            // Generate analysis
+            // generates analysis
             generateAnalysis(repo, issueList1, issueList2, commonIssues);
             
-            // Stop microservices
+            // stops microservices
             launcher.stop();
             
         } catch (Exception e) {
@@ -146,10 +144,9 @@ public class App {
         repo.setId(repoId);
         RepoModel loaded = (RepoModel) redisDB.load(repo);
         
-        // Map the "Author Name" field from Redis to authorName in Java
+        // maps author name field from redis to authorname in java
         if (loaded != null) {
-            // The RedisDB should handle the mapping, but if not, we do it here
-            // For now, we'll rely on the RedisDB mapping
+            // redisdb should handle the mapping
         }
         
         return loaded;
@@ -189,7 +186,7 @@ public class App {
         String clonePath = cloneDir + "/" + repoName;
         File repoDir = new File(clonePath);
         
-        // If already cloned, skip
+        // skips if already cloned
         if (repoDir.exists()) {
             System.out.println("Repository already cloned at: " + clonePath);
             return clonePath;
@@ -207,7 +204,7 @@ public class App {
     }
     
     private String extractRepoName(String repoUrl) {
-        // Extract repo name from URL like https://github.com/user/repo.git
+        // extracts repo name from url
         String[] parts = repoUrl.replace(".git", "").split("/");
         return parts[parts.length - 1];
     }
@@ -215,7 +212,7 @@ public class App {
     private List<String> loadFilesToAnalyze() {
         List<String> files = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(SELECTED_REPO_FILE))) {
-            String repoId = reader.readLine(); // Skip first line (repo ID)
+            String repoId = reader.readLine(); // skips first line (repo id)
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
@@ -233,7 +230,7 @@ public class App {
         List<BugIssue> summarizedIssues = new ArrayList<>();
         
         for (IssueModel issue : issues) {
-            // Convert IssueModel to JSON for microservice
+            // converts issuemodel to json for microservice
             JsonObject issueJson = new JsonObject();
             issueJson.addProperty("description", issue.getDescription());
             issueJson.addProperty("date", issue.getDate() != null ? 
@@ -267,10 +264,10 @@ public class App {
                 continue;
             }
             
-            // Read file content
+            // reads file content
             String content = new String(Files.readAllBytes(Paths.get(fullPath)), StandardCharsets.UTF_8);
             
-            // Prepare input for microservice
+            // prepares input for microservice
             JsonObject inputJson = new JsonObject();
             inputJson.addProperty("filename", filePath);
             inputJson.addProperty("content", content);

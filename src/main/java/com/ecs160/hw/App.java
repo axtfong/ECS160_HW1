@@ -37,7 +37,7 @@ public class App
         String cCppReposPath = "top_c_cpp_repos.json";
         String rustReposPath = "top_rust_repos.json";
 
-        // ensure cache files exist for each language or fetch from github api
+        // ensures cache files exist for each language or fetches from github api
         ensureJsonFileExists(javaReposPath, "java", jsonHandler);
         ensureJsonFileExists(cCppReposPath, "c++", jsonHandler);
         ensureJsonFileExists(rustReposPath, "rust", jsonHandler);
@@ -46,17 +46,17 @@ public class App
         List<Repo> cCppRepos = jsonHandler.loadReposFromFile(cCppReposPath);
         List<Repo> rustRepos = jsonHandler.loadReposFromFile(rustReposPath);
 
-        // calculate statistics and print modified file data for each language
+        // calculates statistics and prints modified file data for each language
         processLanguage("Java", javaRepos, gitService);
         processLanguage("C/C++", cCppRepos, gitService);
         processLanguage("Rust", rustRepos, gitService);
 
-        // find and clone the most popular repo containing actual source code
+        // finds and clones the most popular repo containing actual source code
         cloneMostPopularSourceRepo("Java", javaRepos, gitService);
         cloneMostPopularSourceRepo("C/C++", cCppRepos, gitService);
         cloneMostPopularSourceRepo("Rust", rustRepos, gitService);
 
-        // persist all repository data to redis
+        // persists all repository data to redis
         saveAllReposToRedis(javaRepos, cCppRepos, rustRepos, gitService);
 
         System.out.println("Processing complete!");
@@ -71,7 +71,7 @@ public class App
             try {
                 String jsonData = fetchReposFromGitHub(language);
 
-                // format json data for readability before saving
+                // formats json data for readability before saving
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 Object jsonObject = JsonParser.parseString(jsonData);
                 String prettyJson = gson.toJson(jsonObject);
@@ -93,7 +93,7 @@ public class App
     private static String fetchReposFromGitHub(String language) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
 
-        // query parameter
+        // query parameter for github api
         String languageQuery = language.replace("+", "%2B").replace(" ", "+");
         String query = String.format("language:%s", languageQuery);
 
@@ -104,7 +104,7 @@ public class App
                 .uri(URI.create(url))
                 .header("Accept", "application/vnd.github.v3+json");
 
-        // add authentication token if available
+        // adds authentication token if available
         String apiKey = ConfigUtil.getGitHubApiKey();
         if (apiKey != null && !apiKey.isEmpty()) {
             requestBuilder.header("Authorization", "Bearer " + apiKey);
@@ -129,14 +129,14 @@ public class App
         int openIssues = 0;
         int newCommitsInForks = 0;
 
-        // load fork data first for all repos
+        // loads fork data first for all repos
         for (Repo repo : repos) {
             gitService.fetchRecentCommitsWithCache(repo, language);
-            // Fetch issues for each repo
+            // fetches issues for each repo
             gitService.fetchIssues(repo);
         }
 
-        // accumulate statistics from all repositories
+        // accumulates statistics from all repositories
         for (Repo repo : repos) {
             totalStars += repo.getStarCount();
             totalForks += repo.getForksCount();
@@ -150,7 +150,7 @@ public class App
         System.out.println("New commits in forked repos: " + newCommitsInForks);
         System.out.println("Open issues in top-10 repos: " + openIssues);
 
-         // display the top 3 most modified files for each repository
+         // displays the top 3 most modified files for each repository
         for (int i = 0; i < repos.size(); i++) {
             Repo repo = repos.get(i);
 
@@ -167,10 +167,10 @@ public class App
     private static int countNewCommitsInForks(Repo repo) {
         int count = 0;
 
-        // limit to 20 forks
+        // limits to 20 forks
         int forksToCheck = Math.min(20, repo.getForks().size());
 
-        // start from end of list to get the most recent forks
+        // starts from end of list to get the most recent forks
         int startIndex = Math.max(0, repo.getForks().size() - forksToCheck);
 
         for (int i = startIndex; i < repo.getForks().size(); i++) {
@@ -185,7 +185,7 @@ public class App
     private static void cloneMostPopularSourceRepo(String language, List<Repo> repos, GitService gitService) {
         Repo mostPopular = null;
 
-        // find repository with most stars that contains actual source code
+        // finds repository with most stars that contains actual source code
         for (Repo repo : repos) {
             if (gitService.isRepoContainingSourceCode(repo)) {
                 if (mostPopular == null || repo.getStarCount() > mostPopular.getStarCount()) {
@@ -205,7 +205,7 @@ public class App
     private static void saveAllReposToRedis(List<Repo> javaRepos, List<Repo> cCppRepos, List<Repo> rustRepos, GitService gitService) {
         System.out.println("\nSaving repositories to Redis...");
 
-        // store all repository data for each language to redis
+        // stores all repository data for each language to redis
         for (Repo repo : javaRepos) {
             gitService.saveRepoToRedis(repo);
         }

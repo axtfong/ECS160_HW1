@@ -12,11 +12,7 @@ import com.google.gson.JsonParser;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Microservice C: Issue Summary Comparator
- * Provides an endpoint that accepts a list of two lists of Issues in Json format 
- * and returns a Json list of Issues that are common in both.
- */
+// microservice class for issue comparator
 @Microservice
 public class IssueComparatorMicroservice {
     private OllamaClient ollamaClient;
@@ -30,12 +26,12 @@ public class IssueComparatorMicroservice {
     @Endpoint(url = "check_equivalence")
     public String handleRequest(String input) {
         try {
-            // Parse input - expect JSON with two arrays: list1 and list2
+            // parses input json with two arrays: list1 and list2
             JsonObject inputJson = JsonParser.parseString(input).getAsJsonObject();
             JsonArray list1Json = inputJson.has("list1") ? inputJson.get("list1").getAsJsonArray() : new JsonArray();
             JsonArray list2Json = inputJson.has("list2") ? inputJson.get("list2").getAsJsonArray() : new JsonArray();
             
-            // Convert JSON arrays to lists of BugIssue
+            // converts json arrays to lists of bugissue
             List<BugIssue> list1 = new ArrayList<>();
             for (int i = 0; i < list1Json.size(); i++) {
                 try {
@@ -44,7 +40,7 @@ public class IssueComparatorMicroservice {
                     list1.add(issue);
                 } catch (Exception e) {
                     System.err.println("Error parsing issue in list1: " + e.getMessage());
-                    // Skip this issue
+                    // skips this issue
                 }
             }
             
@@ -56,11 +52,11 @@ public class IssueComparatorMicroservice {
                     list2.add(issue);
                 } catch (Exception e) {
                     System.err.println("Error parsing issue in list2: " + e.getMessage());
-                    // Skip this issue
+                    // skips this issue
                 }
             }
             
-            // Use Ollama to compare the issues and find common ones
+            // uses ollama to compare issues and find common ones
             String prompt = String.format(
                 "Compare these two lists of bug reports and identify which bugs are the same or very similar.\n\n" +
                 "List 1:\n%s\n\n" +
@@ -77,10 +73,10 @@ public class IssueComparatorMicroservice {
                 gson.toJson(list1), gson.toJson(list2)
             );
             
-            // Get response from Ollama
+            // gets response from ollama
             String response = ollamaClient.generate(prompt);
             
-            // Try to parse the response as JSON array
+            // tries to parse response as json array
             try {
                 JsonArray jsonArray = parseJsonArrayFromResponse(response);
                 if (jsonArray != null) {
@@ -92,7 +88,7 @@ public class IssueComparatorMicroservice {
                             commonBugs.add(bug);
                         } catch (Exception e) {
                             System.err.println("Error parsing bug issue " + i + ": " + e.getMessage());
-                            // Skip this issue
+                            // skips this issue
                         }
                     }
                     
@@ -103,7 +99,7 @@ public class IssueComparatorMicroservice {
                 e.printStackTrace();
             }
             
-            // Fallback: use simple comparison based on description similarity
+            // fallback: uses simple comparison based on description similarity
             List<BugIssue> commonBugs = findCommonBugs(list1, list2);
             return gson.toJson(commonBugs);
         } catch (Exception e) {
@@ -121,12 +117,12 @@ public class IssueComparatorMicroservice {
         
         for (BugIssue bug1 : list1) {
             for (BugIssue bug2 : list2) {
-                // Simple similarity check: same bug type and similar description
+                // simple similarity check: same bug type and similar description
                 if (bug1.getBug_type().equalsIgnoreCase(bug2.getBug_type())) {
                     String desc1 = bug1.getDescription().toLowerCase();
                     String desc2 = bug2.getDescription().toLowerCase();
                     
-                    // Check if descriptions share significant words
+                    // checks if descriptions share significant words
                     String[] words1 = desc1.split("\\s+");
                     String[] words2 = desc2.split("\\s+");
                     int commonWords = 0;
@@ -141,7 +137,7 @@ public class IssueComparatorMicroservice {
                         }
                     }
                     
-                    // If at least 2 significant words match, consider them common
+                    // considers them common if at least 2 significant words match
                     if (commonWords >= 2) {
                         common.add(bug1);
                         break;
@@ -162,10 +158,10 @@ public class IssueComparatorMicroservice {
         }
         
         try {
-            // Try parsing directly first
+            // tries parsing directly first
             return JsonParser.parseString(response).getAsJsonArray();
         } catch (Exception e) {
-            // Try extracting JSON array from response
+            // tries extracting json array from response
             int arrayStart = response.indexOf("[");
             int arrayEnd = response.lastIndexOf("]") + 1;
             if (arrayStart >= 0 && arrayEnd > arrayStart) {
@@ -187,7 +183,7 @@ public class IssueComparatorMicroservice {
     private BugIssue parseBugIssueFromJson(JsonObject json) {
         BugIssue bugIssue = new BugIssue();
         
-        // Handle bug_type
+        // handles bug_type
         if (json.has("bug_type")) {
             try {
                 bugIssue.setBug_type(json.get("bug_type").getAsString());
@@ -198,7 +194,7 @@ public class IssueComparatorMicroservice {
             bugIssue.setBug_type("Unknown");
         }
         
-        // Handle line - convert "None" or invalid values to -1
+        // handles line, converts none or invalid values to -1
         if (json.has("line")) {
             try {
                 String lineStr = json.get("line").getAsString().trim();
@@ -208,9 +204,9 @@ public class IssueComparatorMicroservice {
                 } else {
                     bugIssue.setLine(Integer.parseInt(lineStr));
                 }
-            } catch (Exception e) {
+                } catch (Exception e) {
                 try {
-                    // Try as integer
+                    // tries as integer
                     bugIssue.setLine(json.get("line").getAsInt());
                 } catch (Exception ex) {
                     bugIssue.setLine(-1);
@@ -220,7 +216,7 @@ public class IssueComparatorMicroservice {
             bugIssue.setLine(-1);
         }
         
-        // Handle description
+        // handles description
         if (json.has("description")) {
             try {
                 bugIssue.setDescription(json.get("description").getAsString());
@@ -231,7 +227,7 @@ public class IssueComparatorMicroservice {
             bugIssue.setDescription("");
         }
         
-        // Handle filename
+        // handles filename
         if (json.has("filename")) {
             try {
                 String filename = json.get("filename").getAsString();

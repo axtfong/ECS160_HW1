@@ -6,9 +6,7 @@ import com.ecs160.hw2.persistence.PersistableObject;
 
 import java.util.Date;
 
-/**
- * Issue model for persistence framework.
- */
+// issue model for persistence framework
 @PersistableObject
 public class IssueModel {
     @Id
@@ -16,12 +14,12 @@ public class IssueModel {
     private String id;
     
     @PersistableField
-    private Date date;  // Maps to "Date" in Redis
+    private Date date;  // maps to "Date" in redis
     
     @PersistableField
     private String Description;
     
-    // Getters and setters
+    // getters and setters
     public String getId() {
         return id;
     }
