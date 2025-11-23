@@ -15,11 +15,15 @@ import com.ecs160.hw.model.Owner;
 import com.ecs160.hw.model.Repo;
 import com.ecs160.hw.service.GitService;
 
+// test suite for gitservice functionality
+// tests repository analysis, commit tracking, and statistics calculation
 public class AppTest
 {
     private GitService gitService;
     private Repo testRepo;
 
+    // set up test fixtures before each test
+    // creates a standard test repository with commits and modified files
     @Before
     public void setup() {
         gitService = new GitService();
@@ -34,19 +38,22 @@ public class AppTest
         testRepo.setOpenIssuesCount(50);
         testRepo.setStarCount(1000);
 
-        // test commits w modified files
+        // create test commits with modified files to test file tracking
         List<Commit> commits = new ArrayList<>();
 
+        // commit 1 modifies 3 files including app.java
         Commit commit1 = new Commit();
         commit1.setSha("abc123");
         commit1.setMessage("Test commit 1");
         commit1.setModifiedFiles(Arrays.asList("src/main/java/App.java", "README.md", "pom.xml"));
 
+        // commit 2 modifies 2 files including app.java again
         Commit commit2 = new Commit();
         commit2.setSha("def456");
         commit2.setMessage("Test commit 2");
         commit2.setModifiedFiles(Arrays.asList("src/main/java/App.java", "src/main/java/util/Helper.java"));
 
+        // commit 3 modifies 2 files including app.java a third time
         Commit commit3 = new Commit();
         commit3.setSha("ghi789");
         commit3.setMessage("Test commit 3");
@@ -63,13 +70,17 @@ public class AppTest
     public void testCalculateFileModificationCount() {
         var modificationCounts = gitService.calculateFileModificationCount(testRepo);
 
+        //app.java appears in all 3 commits
         assertEquals(3, modificationCounts.get("src/main/java/App.java").intValue());
+        // each of these files appears in only 1 commit
         assertEquals(1, modificationCounts.get("README.md").intValue());
         assertEquals(1, modificationCounts.get("pom.xml").intValue());
         assertEquals(1, modificationCounts.get("src/main/java/util/Helper.java").intValue());
         assertEquals(1, modificationCounts.get("src/main/java/model/User.java").intValue());
     }
-
+    
+    // test that the top 3 most frequently modified files are identified correctly
+    // app.java should be #1, and 2 other files should be in the top 3
     @Test
     public void testGetTop3ModifiedFiles() {
         List<String> top3Files = gitService.getTop3ModifiedFiles(testRepo);
@@ -78,11 +89,12 @@ public class AppTest
 
         // verify that "src/main/java/App.java" is most modified file
         assertEquals("Most modified file should be App.java", "src/main/java/App.java", top3Files.get(0));
-
+        
+        // the remaining 4 files all have 1 modification, so any 2 of them could be in top 3
         List<String> expectedOtherFiles = Arrays.asList(
                 "README.md", "pom.xml", "src/main/java/util/Helper.java", "src/main/java/model/User.java"
         );
-
+        // count how many of the expected files are in positions 2 and 3
         int foundCount = 0;
         for (int i = 1; i < top3Files.size(); i++) {
             if (expectedOtherFiles.contains(top3Files.get(i))) {
@@ -93,19 +105,24 @@ public class AppTest
         assertTrue("Should contain at least 2 of the expected other files", foundCount >= 2);
     }
 
+    // test source code detection based on file extensions
+    // repos with .java, .py, etc. should be detected. repos with only docs should not
     @Test
     public void testIsRepoContainingSourceCode() {
+        // testrepo has .java files, so should be detected as source code
         assertTrue(gitService.isRepoContainingSourceCode(testRepo));
 
-        // create repo w no source code
+        // create a documentation-only repo with no source code files
         Repo docsRepo = new Repo();
         Commit docsCommit = new Commit();
         docsCommit.setModifiedFiles(Arrays.asList("README.md", "docs/guide.md", "LICENSE"));
         docsRepo.setRecentCommits(List.of(docsCommit));
 
+        // documentation repo should not be detected as source code
         assertFalse(gitService.isRepoContainingSourceCode(docsRepo));
     }
 
+    // test total star count calculation across multiple repositories
     @Test
     public void testCalculateTotalStars() {
         Repo repo1 = new Repo();
@@ -116,6 +133,7 @@ public class AppTest
 
         List<Repo> testRepos = Arrays.asList(repo1, repo2);
 
+        // sum up stars across all repos
         int totalStars = 0;
         for (Repo repo : testRepos) {
             totalStars += repo.getStarCount();
@@ -124,6 +142,7 @@ public class AppTest
         assertEquals(3000, totalStars);
     }
 
+    // test total fork count calculation across multiple repositories
     @Test
     public void testCalculateTotalForks() {
         Repo repo1 = new Repo();
@@ -134,6 +153,7 @@ public class AppTest
 
         List<Repo> testRepos = Arrays.asList(repo1, repo2);
 
+        // sum up forks across all repos
         int totalForks = 0;
         for (Repo repo : testRepos) {
             totalForks += repo.getForksCount();
@@ -142,6 +162,7 @@ public class AppTest
         assertEquals(1200, totalForks);
     }
 
+    // test total open issues calculation across multiple repositories
     @Test
     public void testCalculateOpenIssues() {
         Repo repo1 = new Repo();
@@ -152,6 +173,7 @@ public class AppTest
 
         List<Repo> testRepos = Arrays.asList(repo1, repo2);
 
+        // sum up open issues across all repos
         int totalIssues = 0;
         for (Repo repo : testRepos) {
             totalIssues += repo.getOpenIssuesCount();
@@ -160,6 +182,8 @@ public class AppTest
         assertEquals(125, totalIssues);
     }
 
+    // test counting new commits across repository forks
+    // should sum commit counts from all forks
     @Test
     public void testCountNewCommitsInForks() {
         Repo mainRepo = new Repo();
@@ -177,14 +201,19 @@ public class AppTest
         assertEquals(15, newCommits);
     }
 
-    // same helper in App.java
+    // helper method to count new commits across repository forks
+    // limits to checking the last 20 forks to avoid performance issues
+    // this mirrors the implementation in app.java
     private int countNewCommitsInForks(Repo repo) {
         int count = 0;
 
+        // only check up to 20 most recent forks
         int forksToCheck = Math.min(20, repo.getForks().size());
 
+        // calculate starting index to get the last n forks
         int startIndex = Math.max(0, repo.getForks().size() - forksToCheck);
 
+        // sum commit counts from the last n forks
         for (int i = startIndex; i < repo.getForks().size(); i++) {
             Repo fork = repo.getForks().get(i);
             count += fork.getCommitCount();
@@ -193,11 +222,14 @@ public class AppTest
         return count;
     }
 
+    // test identification of top 3 modified files in a repository
+    // file1.java should be #1 with 3 modifications
     @Test
     public void testIdentifyTop3ModifiedFilesPerRepo() {
         Repo repo1 = new Repo();
         repo1.setName("repo1");
 
+        // file1.java modified in all 3 commits
         Commit commit1 = new Commit();
         commit1.setModifiedFiles(Arrays.asList("file1.java", "file2.java"));
 
@@ -214,12 +246,15 @@ public class AppTest
         assertEquals("Top file should be file1.java with 3 modifications", "file1.java", top3Files.get(0));
         assertEquals(3, top3Files.size()); // Should return exactly 3 files (or fewer if there aren't 3 files)
 
+        // verify all returned files are from the modified files list
         List<String> allPossibleFiles = Arrays.asList("file1.java", "file2.java", "file3.java", "file4.java");
         for (String file : top3Files) {
             assertTrue("Returned file should be in the list of modified files", allPossibleFiles.contains(file));
         }
     }
 
+    // test that only the last 50 commits are analyzed for file modifications
+    // this ensures we don't process too much history
     @Test
     public void testLastFiftyCommits() {
         Repo repo = new Repo();
@@ -227,12 +262,16 @@ public class AppTest
 
         List<Commit> commits = new ArrayList<>();
 
+        // create 60 commits with different file patterns
         for (int i = 0; i < 60; i++) {
             Commit commit = new Commit();
+            // first 10 commits modify file1.java
             if (i < 10) {
                 commit.setModifiedFiles(Arrays.asList("file1.java"));
+            // next 20 commits modify file2.java
             } else if (i < 30) {
                 commit.setModifiedFiles(Arrays.asList("file2.java"));
+            // last 30 commits modify file3.java
             } else {
                 commit.setModifiedFiles(Arrays.asList("file3.java"));
             }
@@ -253,11 +292,13 @@ public class AppTest
             }
         }
 
+
         assertEquals("file3.java should have 30 modifications", Integer.valueOf(30), fileModificationCount.get("file3.java"));
         assertEquals("file2.java should have 20 modifications", Integer.valueOf(20), fileModificationCount.get("file2.java"));
 
         assertNull("file1.java should not be in the last 50 commits", fileModificationCount.get("file1.java"));
     }
+
 
     @Test
     public void testForksCommitCounting() {
@@ -339,6 +380,8 @@ public class AppTest
         assertEquals("Total open issues should be the sum across all repos", 120, totalOpenIssues);
     }
 
+    // test file modification counting with duplicate files across commits
+    // verifies correct counting and sorting by modification frequency
     @Test
     public void testModifiedFilesWithDuplicates() {
         Repo repo = new Repo();
@@ -346,6 +389,7 @@ public class AppTest
 
         List<Commit> commits = new ArrayList<>();
 
+        // filea.java appears in all 3 commits
         Commit commit1 = new Commit();
         commit1.setModifiedFiles(Arrays.asList("fileA.java", "fileB.java", "fileC.java"));
 
@@ -369,6 +413,7 @@ public class AppTest
         // fileB.java should be second (2 modifications)
         assertEquals("fileB.java should be the second most modified file", "fileB.java", top3Files.get(1));
 
+        // the third file should be one of the files with only 1 modification
         assertTrue("The third file should be one of the files with 1 modification",
                 top3Files.get(2).equals("fileC.java") ||
                         top3Files.get(2).equals("fileD.java") ||
@@ -376,6 +421,8 @@ public class AppTest
                         top3Files.get(2).equals("fileF.java"));
     }
 
+    // test handling of ties in file modification counts
+    // when all files have equal modifications, all should be returned
     @Test
     public void testTop3FilesWithTies() {
         Repo repo = new Repo();
@@ -383,6 +430,7 @@ public class AppTest
 
         List<Commit> commits = new ArrayList<>();
 
+        // all 3 files have equal modification counts (2 each)
         Commit commit1 = new Commit();
         commit1.setModifiedFiles(Arrays.asList("fileA.java", "fileB.java", "fileC.java"));
 
@@ -395,12 +443,15 @@ public class AppTest
 
         List<String> top3Files = gitService.getTop3ModifiedFiles(repo);
 
+        // all files have equal counts, so all 3 should be returned
         assertEquals("Should return 3 files", 3, top3Files.size());
         assertTrue("Should contain fileA.java", top3Files.contains("fileA.java"));
         assertTrue("Should contain fileB.java", top3Files.contains("fileB.java"));
         assertTrue("Should contain fileC.java", top3Files.contains("fileC.java"));
     }
 
+    // test edge case where a repository has fewer than 3 modified files
+    // should return only the available files, not fail or pad with nulls
     @Test
     public void testTop3FilesWithFewerThanThreeFiles() {
         Repo repo = new Repo();
@@ -420,9 +471,12 @@ public class AppTest
 
         List<String> top3Files = gitService.getTop3ModifiedFiles(repo);
 
+        // should return only the 2 files that exist
         assertEquals("Should return only 2 files", 2, top3Files.size());
     }
 
+    // test source code detection when repository has no commits
+    // tutorial repos should be filtered out, but regular repos should pass
     @Test
     public void testSourceCodeDetectionWithMixedFiles() {
         Repo repo = new Repo();
@@ -476,6 +530,8 @@ public class AppTest
         assertEquals("Should count all 20 forks", 210, newCommits);
     }
 
+    // test stability of top 3 file sorting when all files have equal modification counts
+    // this ensures deterministic behavior in tie-breaking scenarios
     @Test
     public void testStabilityOfTop3ModifiedFiles() {
         Repo repo = new Repo();
@@ -509,6 +565,8 @@ public class AppTest
         assertEquals("Third should be delta.java", "delta.java", top3Files.get(2));
     }
 
+    // comprehensive integration test covering all repository statistics
+    // tests a complete repository with owner, commits, issues, and forks
     @Test
     public void testCompleteRepoStatistics() {
         Repo repo = new Repo();
@@ -554,6 +612,7 @@ public class AppTest
         }
         repo.setForks(forks);
 
+        // verify all statistics are correctly set
         assertEquals("Star count should match", 5000, repo.getStarCount());
         assertEquals("Fork count should match", 1000, repo.getForksCount());
         assertEquals("Open issues count should match", 100, repo.getOpenIssuesCount());
