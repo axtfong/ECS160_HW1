@@ -131,12 +131,75 @@ public class GitService {
     }
 
     public void saveRepoToRedis(Repo repo) {
-        String repoKey = "reponame:" + repo.getName();
+        // Generate repo ID if not set: repo-<counter>
+        if (repo.getId() == null || repo.getId().isEmpty()) {
+            repo.setId("repo-" + System.currentTimeMillis());
+        }
+        String repoKey = repo.getId();
 
-        // save repo info
+        // Generate issue IDs and save issues first (in database 1)
+        List<String> issueIds = new ArrayList<>();
+        if (repo.getIssues() != null && !repo.getIssues().isEmpty()) {
+            jedis.select(1);  // Switch to database 1 for issues
+            for (int i = 0; i < repo.getIssues().size(); i++) {
+                Issue issue = repo.getIssues().get(i);
+                // Generate issue ID if not set: iss-<counter>
+                if (issue.getId() == null || issue.getId().isEmpty()) {
+                    issue.setId("iss-" + (System.currentTimeMillis() + i));
+                }
+                String issueKey = issue.getId();
+                issueIds.add(issueKey);
+
+                // Save issue info using issue ID as key
+                jedis.hset(issueKey, "id", issue.getId());
+                if (issue.getCreatedAt() != null) {
+                    // Format date as ISO 8601 string
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                    jedis.hset(issueKey, "Date", sdf.format(issue.getCreatedAt()));
+                } else {
+                    // Use current date if not set
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                    jedis.hset(issueKey, "Date", sdf.format(new Date()));
+                }
+                jedis.hset(issueKey, "Description", issue.getDescription() != null ? issue.getDescription() : "");
+                
+                // Save title and body for reference
+                jedis.hset(issueKey, "title", issue.getTitle() != null ? issue.getTitle() : "");
+                jedis.hset(issueKey, "body", issue.getBody() != null ? issue.getBody() : "");
+                jedis.hset(issueKey, "state", issue.getState() != null ? issue.getState() : "");
+                if (issue.getUpdatedAt() != null) {
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                    jedis.hset(issueKey, "updatedAt", sdf.format(issue.getUpdatedAt()));
+                }
+            }
+        }
+
+        // Save repo info using repo ID as key (in database 0)
+        jedis.select(0);  // Switch back to database 0 for repos
+        jedis.hset(repoKey, "id", repo.getId());
+        jedis.hset(repoKey, "Url", repo.getHtmlUrl() != null ? repo.getHtmlUrl() : "");
+        
+        // Format createdAt date
+        if (repo.getCreatedAt() != null) {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+            jedis.hset(repoKey, "CreatedAt", sdf.format(repo.getCreatedAt()));
+        } else {
+            // Use current date if not set
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+            jedis.hset(repoKey, "CreatedAt", sdf.format(new Date()));
+        }
+        
+        // Author Name is the owner login
+        jedis.hset(repoKey, "Author Name", repo.getOwnerLogin() != null ? repo.getOwnerLogin() : "");
+        
+        // Save comma-separated issue IDs
+        String issuesList = String.join(",", issueIds);
+        jedis.hset(repoKey, "Issues", issuesList);
+        
+        // Also save other fields for compatibility
         jedis.hset(repoKey, "name", repo.getName());
-        jedis.hset(repoKey, "ownerLogin", repo.getOwnerLogin());
-        jedis.hset(repoKey, "htmlUrl", repo.getHtmlUrl());
+        jedis.hset(repoKey, "ownerLogin", repo.getOwnerLogin() != null ? repo.getOwnerLogin() : "");
+        jedis.hset(repoKey, "htmlUrl", repo.getHtmlUrl() != null ? repo.getHtmlUrl() : "");
         jedis.hset(repoKey, "forksCount", String.valueOf(repo.getForksCount()));
         jedis.hset(repoKey, "language", repo.getLanguage() != null ? repo.getLanguage() : "");
         jedis.hset(repoKey, "openIssuesCount", String.valueOf(repo.getOpenIssuesCount()));
@@ -151,27 +214,6 @@ public class GitService {
             jedis.hset(ownerKey, "htmlUrl", repo.getOwner().getHtmlUrl() != null ? repo.getOwner().getHtmlUrl() : "");
             jedis.hset(ownerKey, "siteAdmin", String.valueOf(repo.getOwner().isSiteAdmin()));
             jedis.hset(repoKey, "owner", ownerKey);
-        }
-
-        // save issues info
-        if (repo.getIssues() != null && !repo.getIssues().isEmpty()) {
-            for (int i = 0; i < repo.getIssues().size(); i++) {
-                Issue issue = repo.getIssues().get(i);
-                String issueKey = "issue:" + repo.getName() + ":" + i;
-
-                jedis.hset(issueKey, "title", issue.getTitle() != null ? issue.getTitle() : "");
-                jedis.hset(issueKey, "body", issue.getBody() != null ? issue.getBody() : "");
-                jedis.hset(issueKey, "state", issue.getState() != null ? issue.getState() : "");
-
-                if (issue.getCreatedAt() != null) {
-                    jedis.hset(issueKey, "createdAt", issue.getCreatedAt().toString());
-                }
-                if (issue.getUpdatedAt() != null) {
-                    jedis.hset(issueKey, "updatedAt", issue.getUpdatedAt().toString());
-                }
-
-                jedis.sadd("repo:" + repo.getName() + ":issues", issueKey);
-            }
         }
     }
 

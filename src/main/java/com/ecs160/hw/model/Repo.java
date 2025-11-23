@@ -1,13 +1,17 @@
 package com.ecs160.hw.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Repo {
+    private String id;  // e.g., "repo-101"
+    private String author;
     private String name;
     private Owner owner;
     private String ownerLogin;
     private String htmlUrl;
+    private Date createdAt;
     private int forksCount;
     private String language;
     private int openIssuesCount;
@@ -21,6 +25,14 @@ public class Repo {
         this.forks = new ArrayList<>();
         this.recentCommits = new ArrayList<>();
         this.issues = new ArrayList<>();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() { return name; }
@@ -75,4 +87,12 @@ public class Repo {
     public int getStarCount() { return starCount; }
 
     public void setStarCount(int starCount) { this.starCount = starCount; }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
 }

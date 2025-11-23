@@ -3,11 +3,20 @@ package com.ecs160.hw.model;
 import java.util.Date;
 
 public class Issue {
+    private String id;  // e.g., "iss-101"
     private String title;
     private String body;
     private String state;
     private Date createdAt;
     private Date updatedAt;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getTitle() {
         return title;
@@ -40,4 +49,13 @@ public class Issue {
     public Date getUpdatedAt() { return updatedAt; }
 
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+
+    // Description is the same as body for our purposes
+    public String getDescription() {
+        return body;
+    }
+
+    public void setDescription(String description) {
+        this.body = description;
+    }
 }
