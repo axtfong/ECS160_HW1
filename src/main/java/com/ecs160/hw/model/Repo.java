@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 public class Repo {
-    private String id;  // e.g., "repo-101"
+    private String id; 
     private String author;
     private String name;
     private Owner owner;

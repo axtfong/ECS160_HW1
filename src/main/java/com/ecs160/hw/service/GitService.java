@@ -36,7 +36,7 @@ public class GitService {
 
         for (Commit commit : repo.getRecentCommits()) {
             for (String file : commit.getModifiedFiles()) {
-                // increment counter for each modified file, 0 if none
+                // increments counter for each modified file
                 fileModificationCount.put(file, fileModificationCount.getOrDefault(file, 0) + 1);
             }
         }
@@ -49,7 +49,7 @@ public class GitService {
 
         List<Map.Entry<String, Integer>> sortedFiles = new ArrayList<>(fileModificationCount.entrySet());
 
-        // stable sort by modification count then by filename
+        // sorts by modification count then filename
         sortedFiles.sort((a, b) -> {
             int countComparison = b.getValue().compareTo(a.getValue());
             if (countComparison != 0) {
@@ -71,7 +71,7 @@ public class GitService {
         if (repo.getRecentCommits() != null && !repo.getRecentCommits().isEmpty()) {
             List<String> sourceFileExtensions = Arrays.asList(".java", ".cpp", ".c", ".h", ".rs", ".go", ".py", ".js");
 
-            // check if any file has a source code extension
+            // checks if any file has source code extension
             for (Commit commit : repo.getRecentCommits()) {
                 for (String file : commit.getModifiedFiles()) {
                     for (String ext : sourceFileExtensions) {
@@ -86,7 +86,7 @@ public class GitService {
             String name = repo.getName().toLowerCase();
             String language = repo.getLanguage();
 
-            // check if these words exist to identify tutorial
+            // checks if these words exist to identify tutorial
             boolean isTutorial = name.contains("guide") ||
                     name.contains("tutorial") ||
                     name.contains("awesome") ||
@@ -96,7 +96,7 @@ public class GitService {
                     name.contains("course") ||
                     name.contains("doc");
 
-            // source code if has a language and not a tutorial
+            // returns true if has language and not tutorial
             return language != null && !language.isEmpty() && !isTutorial;
         }
     }
@@ -112,7 +112,7 @@ public class GitService {
 
             String cloneCommand = "git clone --depth 1 " + repo.getHtmlUrl() + " " + destinationDir + "/" + repo.getName();
 
-            // execute git clone
+            // executes git clone
             Process process = Runtime.getRuntime().exec(cloneCommand);
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -131,39 +131,39 @@ public class GitService {
     }
 
     public void saveRepoToRedis(Repo repo) {
-        // Generate repo ID if not set: repo-<counter>
+        // generates repo id if not set
         if (repo.getId() == null || repo.getId().isEmpty()) {
             repo.setId("repo-" + System.currentTimeMillis());
         }
         String repoKey = repo.getId();
 
-        // Generate issue IDs and save issues first (in database 1)
+        // generates issue ids and saves issues first in database 1
         List<String> issueIds = new ArrayList<>();
         if (repo.getIssues() != null && !repo.getIssues().isEmpty()) {
-            jedis.select(1);  // Switch to database 1 for issues
+            jedis.select(1);  // switches to database 1 for issues
             for (int i = 0; i < repo.getIssues().size(); i++) {
                 Issue issue = repo.getIssues().get(i);
-                // Generate issue ID if not set: iss-<counter>
+                // generates issue id if not set
                 if (issue.getId() == null || issue.getId().isEmpty()) {
                     issue.setId("iss-" + (System.currentTimeMillis() + i));
                 }
                 String issueKey = issue.getId();
                 issueIds.add(issueKey);
 
-                // Save issue info using issue ID as key
+                // saves issue info using issue id as key
                 jedis.hset(issueKey, "id", issue.getId());
                 if (issue.getCreatedAt() != null) {
-                    // Format date as ISO 8601 string
+                    // formats date as iso 8601 string
                     java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
                     jedis.hset(issueKey, "Date", sdf.format(issue.getCreatedAt()));
                 } else {
-                    // Use current date if not set
+                    // uses current date if not set
                     java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
                     jedis.hset(issueKey, "Date", sdf.format(new Date()));
                 }
                 jedis.hset(issueKey, "Description", issue.getDescription() != null ? issue.getDescription() : "");
                 
-                // Save title and body for reference
+                // saves title and body for reference
                 jedis.hset(issueKey, "title", issue.getTitle() != null ? issue.getTitle() : "");
                 jedis.hset(issueKey, "body", issue.getBody() != null ? issue.getBody() : "");
                 jedis.hset(issueKey, "state", issue.getState() != null ? issue.getState() : "");
@@ -174,29 +174,29 @@ public class GitService {
             }
         }
 
-        // Save repo info using repo ID as key (in database 0)
-        jedis.select(0);  // Switch back to database 0 for repos
+        // saves repo info using repo id as key in database 0
+        jedis.select(0);  // switches back to database 0 for repos
         jedis.hset(repoKey, "id", repo.getId());
         jedis.hset(repoKey, "Url", repo.getHtmlUrl() != null ? repo.getHtmlUrl() : "");
         
-        // Format createdAt date
+        // formats createdat date
         if (repo.getCreatedAt() != null) {
             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
             jedis.hset(repoKey, "CreatedAt", sdf.format(repo.getCreatedAt()));
         } else {
-            // Use current date if not set
+            // uses current date if not set
             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
             jedis.hset(repoKey, "CreatedAt", sdf.format(new Date()));
         }
         
-        // Author Name is the owner login
+        // author name is the owner login
         jedis.hset(repoKey, "Author Name", repo.getOwnerLogin() != null ? repo.getOwnerLogin() : "");
         
-        // Save comma-separated issue IDs
+        // saves comma-separated issue ids
         String issuesList = String.join(",", issueIds);
         jedis.hset(repoKey, "Issues", issuesList);
         
-        // Also save other fields for compatibility
+        // also saves other fields for compatibility
         jedis.hset(repoKey, "name", repo.getName());
         jedis.hset(repoKey, "ownerLogin", repo.getOwnerLogin() != null ? repo.getOwnerLogin() : "");
         jedis.hset(repoKey, "htmlUrl", repo.getHtmlUrl() != null ? repo.getHtmlUrl() : "");
@@ -206,7 +206,7 @@ public class GitService {
         jedis.hset(repoKey, "starCount", String.valueOf(repo.getStarCount()));
         jedis.hset(repoKey, "commitCount", String.valueOf(repo.getCommitCount()));
 
-        // save owner info
+        // saves owner info
         if (repo.getOwner() != null) {
             String ownerKey = "owner:" + repo.getOwner().getLogin();
             jedis.hset(ownerKey, "login", repo.getOwner().getLogin());
@@ -225,7 +225,7 @@ public class GitService {
             connection.setRequestProperty("Accept", "application/vnd.github+json");
             connection.setRequestProperty("X-GitHub-Api-Version", "2022-11-28");
 
-            // add api key authentication if available
+            // adds api key authentication if available
             String apiKey = ConfigUtil.getGitHubApiKey();
             if (apiKey != null && !apiKey.isEmpty()) {
                 connection.setRequestProperty("Authorization", "Bearer " + apiKey);
@@ -273,13 +273,13 @@ public class GitService {
                 com.google.gson.JsonObject commitObj = element.getAsJsonObject();
                 Commit commit = new Commit();
 
-                // extract basic commit info
+                // extracts basic commit info
                 commit.setSha(commitObj.get("sha").getAsString());
                 
-                // extract commit message from nested commit object
+                // extracts commit message from nested commit object
                 commit.setMessage(commitObj.getAsJsonObject("commit").get("message").getAsString());
 
-                // fetch modified files for this commit
+                // fetches modified files for this commit
                 fetchCommitFiles(repo, commit);
 
                 commits.add(commit);
@@ -293,7 +293,7 @@ public class GitService {
 
     private void fetchCommitFiles(Repo repo, Commit commit) {
         try {
-            // get the list of files modified in this commit
+            // gets the list of files modified in this commit
             String endpoint = String.format("repos/%s/%s/commits/%s",
                     repo.getOwnerLogin(), repo.getName(), commit.getSha());
             String response = makeGitHubApiRequest(endpoint);
@@ -361,7 +361,7 @@ public class GitService {
 
     private void fetchCommitCount(Repo repo) {
         try {
-            // get commits from last 30 days
+            // gets commits from last 30 days
             String since = java.time.Instant.now()
                     .minus(30, java.time.temporal.ChronoUnit.DAYS)
                     .toString();
@@ -385,7 +385,7 @@ public class GitService {
 
     public void saveCommitDataToFile(Repo repo, String language) {
         try {
-            // remove slashes and other invalid chars
+            // removes slashes and other invalid chars
             String sanitizedLanguage = language.toLowerCase()
                     .replace("/", "_")
                     .replace("+", "plus")
@@ -397,7 +397,7 @@ public class GitService {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             JsonObject repoData = new JsonObject();
 
-            // build json structure for repo data
+            // builds json structure for repo data
             repoData.addProperty("name", repo.getName());
             repoData.addProperty("ownerLogin", repo.getOwnerLogin());
             repoData.addProperty("language", repo.getLanguage());
@@ -439,7 +439,7 @@ public class GitService {
 
     public boolean loadCommitDataFromFile(Repo repo, String language) {
         try {
-            // remove slashes and other invalid chars
+            // removes slashes and other invalid chars
             String sanitizedLanguage = language.toLowerCase()
                     .replace("/", "_")
                     .replace("+", "plus")
@@ -452,7 +452,7 @@ public class GitService {
                 return false;
             }
 
-            // reconstruct fork objects from json
+            // reconstructs fork objects from json
             Gson gson = new Gson();
             try (FileReader reader = new FileReader(file)) {
                 JsonObject repoData = gson.fromJson(reader, JsonObject.class);
@@ -495,7 +495,7 @@ public class GitService {
     }
 
     public void fetchRecentCommitsWithCache(Repo repo, String language) {
-        // try to load from cache first, fetch from API only if cache miss
+        // tries to load from cache first, fetches from api only if cache miss
         if (loadCommitDataFromFile(repo, language)) {
             return;
         }
@@ -539,7 +539,7 @@ public class GitService {
                         ? issueObj.get("body").getAsString() : "");
                 issue.setState(issueObj.has("state") ? issueObj.get("state").getAsString() : "");
 
-                // parse ISO 8601 date strings to java.util.Date objects
+                // parses iso 8601 date strings to java.util.Date objects
                 if (issueObj.has("created_at") && !issueObj.get("created_at").isJsonNull()) {
                     try {
                         String createdAtStr = issueObj.get("created_at").getAsString();

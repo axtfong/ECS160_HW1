@@ -7,9 +7,7 @@ import com.ecs160.hw2.persistence.PersistableObject;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Repository model for persistence framework.
- */
+// repository model for persistence framework
 @PersistableObject
 public class RepoModel {
     @Id
@@ -23,12 +21,12 @@ public class RepoModel {
     private Date CreatedAt;
     
     @PersistableField
-    private String authorName;  // Maps to "Author Name" in Redis
+    private String authorName;  // maps to "Author Name" in redis
     
     @PersistableField
-    private String Issues;  // Comma-separated issue IDs
+    private String Issues;  // comma-separated issue ids
     
-    // Getters and setters
+    // getters and setters
     public String getId() {
         return id;
     }
