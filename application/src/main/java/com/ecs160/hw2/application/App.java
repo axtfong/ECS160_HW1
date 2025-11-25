@@ -9,7 +9,6 @@ import com.ecs160.hw2.application.microservice.BugFinderMicroservice;
 import com.ecs160.hw2.application.microservice.IssueComparatorMicroservice;
 import com.ecs160.hw2.application.microservice.IssueSummarizerMicroservice;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.io.*;
@@ -22,11 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
-/**
- * Main application for HW2.
- */
 public class App {
     private static final String SELECTED_REPO_FILE = "selected_repo.dat";
     private static final String ANALYSIS_FILE = "ANALYSIS.md";
@@ -47,17 +42,24 @@ public class App {
     
     public static void main(String[] args) {
         App app = new App();
+        
+        // Check for cleanup flag
+        if (args.length > 0 && "--clean-test-data".equals(args[0])) {
+            app.cleanTestData();
+            return;
+        }
+        
         app.run();
     }
     
     public void run() {
         try {
-            // Start microservices
+            // start microservices
             System.out.println("Starting microservices...");
             startMicroservices();
-            Thread.sleep(2000); // Wait for server to start
+            Thread.sleep(2000);
             
-            // Load selected repo
+            // load selected repo
             System.out.println("Loading selected repository...");
             String repoId = loadSelectedRepo();
             if (repoId == null) {
@@ -65,38 +67,38 @@ public class App {
                 return;
             }
             
-            // Load repo and issues from Redis
+            // load repo and issues from redis
             System.out.println("Loading repository from Redis...");
             RepoModel repo = loadRepoFromRedis(repoId);
             if (repo == null) {
                 System.err.println("Repository not found: " + repoId);
+                System.err.println("\nAvailable repositories in Redis:");
+                listAvailableRepositories();
+                System.err.println("\nPlease update " + SELECTED_REPO_FILE + " with a valid repository ID from the list above.");
                 return;
             }
             
             List<IssueModel> issues = loadIssuesFromRedis(repo.getIssues());
             System.out.println("Loaded " + issues.size() + " issues");
-            
-            // Clone repository
+
             System.out.println("Cloning repository...");
             String repoPath = cloneRepository(repo.getUrl());
-            
-            // Load files to analyze
+
             List<String> filesToAnalyze = loadFilesToAnalyze();
             
-            // Step 1: Invoke Microservice A to summarize issues
+            // step 1: microservice A
             System.out.println("Summarizing GitHub issues...");
             List<BugIssue> issueList1 = summarizeIssues(issues);
             
-            // Step 2: Invoke Microservice B to find bugs in C files
+            // step 2: microservice B
             System.out.println("Finding bugs in C files...");
             List<BugIssue> issueList2 = findBugsInFiles(repoPath, filesToAnalyze);
             
-            // Step 3: Invoke Microservice C to compare and find common issues
+            // step 3: microservice C
             System.out.println("Comparing issues...");
             List<BugIssue> commonIssues = compareIssues(issueList1, issueList2);
-            
-            // Print results
-            System.out.println("\n=== RESULTS ===");
+
+            System.out.println("\nResults:");
             System.out.println("Issues from GitHub: " + issueList1.size());
             System.out.println("Bugs found by LLM: " + issueList2.size());
             System.out.println("Common issues: " + commonIssues.size());
@@ -106,11 +108,9 @@ public class App {
                 System.out.println("- " + issue.getBug_type() + " at line " + issue.getLine() + 
                     ": " + issue.getDescription());
             }
-            
-            // Generate analysis
+
             generateAnalysis(repo, issueList1, issueList2, commonIssues);
-            
-            // Stop microservices
+
             launcher.stop();
             
         } catch (Exception e) {
@@ -129,7 +129,18 @@ public class App {
             IssueComparatorMicroservice.class
         );
         
-        new Thread(() -> launcher.launch(MICROSERVICE_PORT)).start();
+        Thread serverThread = new Thread(() -> {
+            boolean started = launcher.launch(MICROSERVICE_PORT);
+            if (!started) {
+                System.err.println("Failed to start microservice server. " +
+                    "Port " + MICROSERVICE_PORT + " may already be in use.");
+                System.err.println("Please stop any existing server or kill the process using: " +
+                    "lsof -ti:" + MICROSERVICE_PORT + " | xargs kill");
+                System.exit(1);
+            }
+        });
+        serverThread.setDaemon(true);
+        serverThread.start();
     }
     
     private String loadSelectedRepo() {
@@ -145,14 +156,71 @@ public class App {
         RepoModel repo = new RepoModel();
         repo.setId(repoId);
         RepoModel loaded = (RepoModel) redisDB.load(repo);
-        
-        // Map the "Author Name" field from Redis to authorName in Java
-        if (loaded != null) {
-            // The RedisDB should handle the mapping, but if not, we do it here
-            // For now, we'll rely on the RedisDB mapping
-        }
-        
         return loaded;
+    }
+    
+    private void listAvailableRepositories() {
+        try {
+            // Get all keys that start with "repo-"
+            java.util.Set<String> keys = redisDB.listKeys("repo-*");
+            if (keys == null || keys.isEmpty()) {
+                System.err.println("  No repositories found in Redis.");
+                System.err.println("  Please run the HW1 App.java to populate Redis with repositories.");
+            } else {
+                // Filter out test repositories
+                java.util.Set<String> testRepos = new java.util.HashSet<>();
+                java.util.Set<String> realRepos = new java.util.HashSet<>();
+                
+                for (String key : keys) {
+                    if (key.contains("test")) {
+                        testRepos.add(key);
+                    } else {
+                        realRepos.add(key);
+                    }
+                }
+                
+                if (!realRepos.isEmpty()) {
+                    System.err.println("  Found " + realRepos.size() + " repository(ies):");
+                    for (String key : realRepos) {
+                        System.err.println("  - " + key);
+                    }
+                }
+                
+                if (!testRepos.isEmpty()) {
+                    System.err.println("\n  Warning: Found " + testRepos.size() + " test repository(ies) that should be removed:");
+                    for (String key : testRepos) {
+                        System.err.println("  - " + key + " (test data)");
+                    }
+                    System.err.println("  Run the application with --clean-test-data to remove test repositories.");
+                }
+                
+                if (realRepos.isEmpty() && !testRepos.isEmpty()) {
+                    System.err.println("\n  No real repositories found. Please run the HW1 App.java to populate Redis with repositories.");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("  Error listing repositories: " + e.getMessage());
+        }
+    }
+    
+    private void cleanTestData() {
+        try {
+            java.util.Set<String> keys = redisDB.listKeys("repo-*");
+            int cleaned = 0;
+            for (String key : keys) {
+                if (key.contains("test")) {
+                    redisDB.deleteKey(key);
+                    cleaned++;
+                }
+            }
+            if (cleaned > 0) {
+                System.out.println("Cleaned " + cleaned + " test repository(ies) from Redis.");
+            } else {
+                System.out.println("No test repositories found to clean.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error cleaning test data: " + e.getMessage());
+        }
     }
     
     private List<IssueModel> loadIssuesFromRedis(String issueIdsStr) {
@@ -188,8 +256,7 @@ public class App {
         
         String clonePath = cloneDir + "/" + repoName;
         File repoDir = new File(clonePath);
-        
-        // If already cloned, skip
+
         if (repoDir.exists()) {
             System.out.println("Repository already cloned at: " + clonePath);
             return clonePath;
@@ -207,7 +274,6 @@ public class App {
     }
     
     private String extractRepoName(String repoUrl) {
-        // Extract repo name from URL like https://github.com/user/repo.git
         String[] parts = repoUrl.replace(".git", "").split("/");
         return parts[parts.length - 1];
     }
@@ -215,7 +281,7 @@ public class App {
     private List<String> loadFilesToAnalyze() {
         List<String> files = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(SELECTED_REPO_FILE))) {
-            String repoId = reader.readLine(); // Skip first line (repo ID)
+            String repoId = reader.readLine();
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
@@ -233,7 +299,7 @@ public class App {
         List<BugIssue> summarizedIssues = new ArrayList<>();
         
         for (IssueModel issue : issues) {
-            // Convert IssueModel to JSON for microservice
+            // convert IssueModel to json for microservice
             JsonObject issueJson = new JsonObject();
             issueJson.addProperty("description", issue.getDescription());
             issueJson.addProperty("date", issue.getDate() != null ? 
@@ -266,11 +332,10 @@ public class App {
                 System.err.println("File not found: " + fullPath);
                 continue;
             }
-            
-            // Read file content
+
             String content = new String(Files.readAllBytes(Paths.get(fullPath)), StandardCharsets.UTF_8);
             
-            // Prepare input for microservice
+            // prepare input for microservice
             JsonObject inputJson = new JsonObject();
             inputJson.addProperty("filename", filePath);
             inputJson.addProperty("content", content);

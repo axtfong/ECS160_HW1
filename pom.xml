@@ -5,9 +5,15 @@
     <groupId>com.example</groupId>
     <artifactId>github-repo-analyzer</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>GitHub Repository Analyzer</name>
+
+    <modules>
+        <module>persistence-framework</module>
+        <module>microservice-framework</module>
+        <module>application</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

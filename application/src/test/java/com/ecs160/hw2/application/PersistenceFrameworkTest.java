@@ -25,48 +25,60 @@ public class PersistenceFrameworkTest {
 
     @Test
     public void testPersistAndLoadRepo() {
+        String testRepoId = "repo-test-1";
         RepoModel repo = new RepoModel();
-        repo.setId("repo-test-1");
+        repo.setId(testRepoId);
         repo.setUrl("https://github.com/test/repo");
         repo.setCreatedAt(new Date());
         repo.setAuthorName("testuser");
         repo.setIssues("iss-1,iss-2");
 
-        // Persist
-        boolean persisted = redisDB.persist(repo);
-        assertTrue("Repository should be persisted", persisted);
+        try {
+            // Persist
+            boolean persisted = redisDB.persist(repo);
+            assertTrue("Repository should be persisted", persisted);
 
-        // Load
-        RepoModel loadedRepo = new RepoModel();
-        loadedRepo.setId("repo-test-1");
-        loadedRepo = (RepoModel) redisDB.load(loadedRepo);
+            // Load
+            RepoModel loadedRepo = new RepoModel();
+            loadedRepo.setId(testRepoId);
+            loadedRepo = (RepoModel) redisDB.load(loadedRepo);
 
-        assertNotNull("Repository should be loaded", loadedRepo);
-        assertEquals("repo-test-1", loadedRepo.getId());
-        assertEquals("https://github.com/test/repo", loadedRepo.getUrl());
-        assertEquals("testuser", loadedRepo.getAuthorName());
-        assertEquals("iss-1,iss-2", loadedRepo.getIssues());
+            assertNotNull("Repository should be loaded", loadedRepo);
+            assertEquals(testRepoId, loadedRepo.getId());
+            assertEquals("https://github.com/test/repo", loadedRepo.getUrl());
+            assertEquals("testuser", loadedRepo.getAuthorName());
+            assertEquals("iss-1,iss-2", loadedRepo.getIssues());
+        } finally {
+            // Clean up test data
+            redisDB.deleteKey(testRepoId);
+        }
     }
 
     @Test
     public void testPersistAndLoadIssue() {
+        String testIssueId = "iss-test-1";
         IssueModel issue = new IssueModel();
-        issue.setId("iss-test-1");
+        issue.setId(testIssueId);
         issue.setDate(new Date());
         issue.setDescription("Test issue description");
 
-        // Persist
-        boolean persisted = issueRedisDB.persist(issue);
-        assertTrue("Issue should be persisted", persisted);
+        try {
+            // Persist
+            boolean persisted = issueRedisDB.persist(issue);
+            assertTrue("Issue should be persisted", persisted);
 
-        // Load
-        IssueModel loadedIssue = new IssueModel();
-        loadedIssue.setId("iss-test-1");
-        loadedIssue = (IssueModel) issueRedisDB.load(loadedIssue);
+            // Load
+            IssueModel loadedIssue = new IssueModel();
+            loadedIssue.setId(testIssueId);
+            loadedIssue = (IssueModel) issueRedisDB.load(loadedIssue);
 
-        assertNotNull("Issue should be loaded", loadedIssue);
-        assertEquals("iss-test-1", loadedIssue.getId());
-        assertEquals("Test issue description", loadedIssue.getDescription());
+            assertNotNull("Issue should be loaded", loadedIssue);
+            assertEquals(testIssueId, loadedIssue.getId());
+            assertEquals("Test issue description", loadedIssue.getDescription());
+        } finally {
+            // Clean up test data
+            issueRedisDB.deleteKey(testIssueId);
+        }
     }
 }
 

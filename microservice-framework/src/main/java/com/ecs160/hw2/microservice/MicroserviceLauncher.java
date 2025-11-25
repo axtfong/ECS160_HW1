@@ -112,6 +112,11 @@ public class MicroserviceLauncher {
             }));
             
             return true;
+        } catch (java.net.BindException e) {
+            System.err.println("Error starting server: Port " + port + " is already in use.");
+            System.err.println("Please stop any existing server or use a different port.");
+            System.err.println("To kill the process using port " + port + ", run: lsof -ti:" + port + " | xargs kill");
+            return false;
         } catch (IOException e) {
             System.err.println("Error starting server: " + e.getMessage());
             e.printStackTrace();

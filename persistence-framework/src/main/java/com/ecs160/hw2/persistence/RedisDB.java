@@ -447,6 +447,30 @@ public class RedisDB {
     /**
      * Close the Redis connection.
      */
+    /**
+     * Lists all keys matching a pattern in the current database.
+     * @param pattern The pattern to match (e.g., "repo-*")
+     * @return Set of matching keys
+     */
+    public java.util.Set<String> listKeys(String pattern) {
+        if (jedis == null) {
+            return new java.util.HashSet<>();
+        }
+        return jedis.keys(pattern);
+    }
+
+    /**
+     * Deletes a key from Redis.
+     * @param key The key to delete
+     * @return true if the key was deleted, false otherwise
+     */
+    public boolean deleteKey(String key) {
+        if (jedis == null || key == null) {
+            return false;
+        }
+        return jedis.del(key) > 0;
+    }
+
     public void close() {
         if (jedis != null) {
             jedis.close();
