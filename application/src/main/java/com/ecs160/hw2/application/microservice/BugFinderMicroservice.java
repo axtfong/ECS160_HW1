@@ -22,6 +22,12 @@ public class BugFinderMicroservice {
         this.ollamaClient = new OllamaClient();
         this.gson = new Gson();
     }
+    
+    // Public constructor for testing with mock OllamaClient
+    public BugFinderMicroservice(OllamaClient ollamaClient) {
+        this.ollamaClient = ollamaClient;
+        this.gson = new Gson();
+    }
 
     @Endpoint(url = "find_bugs")
     public String handleRequest(String input) {

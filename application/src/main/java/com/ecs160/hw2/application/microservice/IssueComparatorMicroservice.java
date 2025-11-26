@@ -22,6 +22,12 @@ public class IssueComparatorMicroservice {
         this.ollamaClient = new OllamaClient();
         this.gson = new Gson();
     }
+    
+    // Public constructor for testing with mock OllamaClient
+    public IssueComparatorMicroservice(OllamaClient ollamaClient) {
+        this.ollamaClient = ollamaClient;
+        this.gson = new Gson();
+    }
 
     @Endpoint(url = "check_equivalence")
     public String handleRequest(String input) {

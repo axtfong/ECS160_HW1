@@ -18,6 +18,12 @@ public class IssueSummarizerMicroservice {
         this.ollamaClient = new OllamaClient();
         this.gson = new Gson();
     }
+    
+    // Public constructor for testing with mock OllamaClient
+    public IssueSummarizerMicroservice(OllamaClient ollamaClient) {
+        this.ollamaClient = ollamaClient;
+        this.gson = new Gson();
+    }
 
     @Endpoint(url = "summarize_issue")
     public String handleRequest(String input) {
